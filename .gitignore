@@ -1,0 +1,6 @@
+/sdk
+*.o
+*.tmp
+*.cmd
+*.patch
+*.git
