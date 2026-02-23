@@ -89,10 +89,50 @@ if [ -d ${WORKDIR}/kernel-5.10.66 ]; then
 fi
 
 # build kernel Image
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- rockchip_linux_defconfig
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules -j$(nproc)
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+  rockchip_linux_defconfig
+
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+  olddefconfig
+
+# check kver
+KVER=$(make LOCALVERSION=-kdev kernelrelease)
+KVER="${KVER/kdev*/kdev}"
+if [[ "$KVER" != *kdev ]]; then
+  echo "ERROR: KVER does not end with 'kdev'"
+  exit 1
+fi
+echo "KVER: ${KVER}"
+
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+   -j$(nproc)
+
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+  modules -j$(nproc)
+
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+  modules_install
+
 ls -alh arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb
 
 # release kernel image
