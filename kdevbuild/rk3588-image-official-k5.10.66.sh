@@ -4,7 +4,7 @@ set -uxo pipefail
 
 WORKDIR=$(pwd)
 export DEBIAN_FRONTEND=noninteractive
-export BUILD_TAG="D3588_k5.10.66_${set_rootfs}"
+export BUILD_TAG="RK3588-OWL_k5.10.66_${set_rootfs}"
 
 #==========================================================================#
 #                        init build env                                    #

@@ -131,6 +131,7 @@ make ARCH=arm64 \
   KBUILD_BUILD_USER="builder" \
   KBUILD_BUILD_HOST="kdevbuilder" \
   LOCALVERSION=-kdev \
+  INSTALL_MOD_PATH=$(pwd)/kos \
   modules_install
 
 ls -alh arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb
