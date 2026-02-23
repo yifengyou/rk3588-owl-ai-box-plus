@@ -28,7 +28,7 @@ apt install -y --no-install-recommends \
   make mercurial minicom mtools ncurses-base ncurses-term net-tools \
   nfs-kernel-server ntpdate openssh-client openssh-server openssl p7zip \
   p7zip-full parallel parted patch patchutils pbzip2 perl pigz pixz \
-  pkg-config pv  python3 python3-dev \
+  pkg-config pv python3 python3-dev \
   python3-distutils python3-pip python3-setuptools \
   qemu-user-static rar rdfind rename ripgrep rsync sed squashfs-tools \
   subversion sudo swig tar texinfo tree u-boot-tools udev unzip util-linux \
@@ -67,8 +67,6 @@ mv uboot.img ${WORKDIR}/release/uboot.img
 ls -alh ${WORKDIR}/release/uboot.img
 md5sum ${WORKDIR}/release/uboot.img
 
-exit 0
-
 #==========================================================================#
 #                        build kernel                                      #
 #==========================================================================#
@@ -84,15 +82,17 @@ if ls "${WORKDIR}/official-kernel/"*.patch >/dev/null 2>&1; then
   git am ${WORKDIR}/official-kernel/*.patch
 fi
 
-if [ -d ${WORKDIR}/kernel-6.6.y ]; then
+if [ -d ${WORKDIR}/kernel-5.10.66 ]; then
   ls -alh ${WORKDIR}/official-kernel/
   cp -a ${WORKDIR}/official-kernel/* .
   ls -alh
 fi
 
 # build kernel Image
-make ARCH=arm64 rockchip_linux_defconfig
-make ARCH=arm64 rk3588-evb1-lp4-v10-linux.img -j12
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- rockchip_linux_defconfig
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules -j$(nproc)
 ls -alh arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb
 
 # release kernel image
@@ -101,19 +101,19 @@ md5sum arch/arm64/boot/Image
 cp -a arch/arm64/boot/Image ${WORKDIR}/release/
 
 # release dtb
-ls -alh ./arch/arm64/boot/dts/rockchip/rk3588-liontron-d3588.dtb
-md5sum ./arch/arm64/boot/dts/rockchip/rk3588-liontron-d3588.dtb
-cp -a ./arch/arm64/boot/dts/rockchip/rk3588-liontron-d3588.dtb ${WORKDIR}/release/
+ls -alh arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb
+md5sum arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb
+cp -a arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb ${WORKDIR}/release/
 
 # release config
-cp .config ${WORKDIR}/release/config-6.6.y-kdev
-ls -alh ${WORKDIR}/release/config-6.6.y-kdev
-md5sum ${WORKDIR}/release/config-6.6.y-kdev
+cp .config ${WORKDIR}/release/config-5.10.66-kdev
+ls -alh ${WORKDIR}/release/config-5.10.66-kdev
+md5sum ${WORKDIR}/release/config-5.10.66-kdev
 
 # release system map
-cp System.map ${WORKDIR}/release/System.map-6.6.y-kdev
-ls -alh ${WORKDIR}/release/System.map-6.6.y-kdev
-md5sum ${WORKDIR}/release/System.map-6.6.y-kdev
+cp System.map ${WORKDIR}/release/System.map-5.10.66-kdev
+ls -alh ${WORKDIR}/release/System.map-5.10.66-kdev
+md5sum ${WORKDIR}/release/System.map-5.10.66-kdev
 
 # release kernel modules
 if [ -d kos/lib/modules ]; then
