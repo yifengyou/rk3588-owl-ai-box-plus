@@ -308,8 +308,8 @@ jobs:
             -e set_rootfs=${{ matrix.set_rootfs }} \
             ubuntu:22.04 \
             bash -c "
-              chmod +x /workspace/kdevbuild/build-rk3588-image-k6.6.y.sh ;
-              /workspace/kdevbuild/build-rk3588-image-k6.6.y.sh
+              chmod +x /workspace/kdevbuild/rk3588-image-k6.6.y.sh ;
+              /workspace/kdevbuild/rk3588-image-k6.6.y.sh
             "
 
       - name: List build output

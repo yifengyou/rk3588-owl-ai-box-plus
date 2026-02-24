@@ -134,7 +134,7 @@ make ARCH=arm64 \
   INSTALL_MOD_PATH=$(pwd)/kos \
   modules_install
 
-ls -alh arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb
+ls -alh arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb
 
 # release kernel image
 ls -alh arch/arm64/boot/Image
@@ -142,9 +142,9 @@ md5sum arch/arm64/boot/Image
 cp -a arch/arm64/boot/Image ${WORKDIR}/release/
 
 # release dtb
-ls -alh arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb
-md5sum arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb
-cp -a arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb ${WORKDIR}/release/
+ls -alh arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb
+md5sum arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb
+cp -a arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb ${WORKDIR}/release/
 
 # release config
 cp .config ${WORKDIR}/release/config-5.10.66-kdev
