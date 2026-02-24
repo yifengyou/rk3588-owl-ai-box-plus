@@ -1,4 +1,4 @@
-name: Official RK3588 Build (5.10.66)
+name: Official SDK (5.10.66)
 
 on:
   repository_dispatch:

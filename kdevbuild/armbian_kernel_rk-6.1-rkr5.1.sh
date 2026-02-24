@@ -10,36 +10,27 @@ export DEBIAN_FRONTEND=noninteractive
 #==========================================================================#
 apt-get update
 apt-get install -qq -y ca-certificates
-apt install -y --no-install-recommends \
-  acl android-tools-adb aptly aria2 autoconf autotools-dev axel bc \
-  binfmt-support binutils binutils-aarch64-linux-gnu bison \
-  btrfs-progs build-essential busybox ca-certificates ccache clang cmake \
-  coreutils cpio crossbuild-essential-arm64 cryptsetup curl cvs \
+apt-get install -qq -y --no-install-recommends \
+  acl aptly aria2 axel bc binfmt-support binutils-aarch64-linux-gnu bison \
+  bsdextrautils btrfs-progs build-essential busybox ca-certificates ccache \
+  clang coreutils cpio crossbuild-essential-arm64 cryptsetup curl \
   debian-archive-keyring debian-keyring debootstrap device-tree-compiler \
   dialog dirmngr distcc dosfstools dwarves e2fsprogs expect f2fs-tools \
-  fakeroot fdisk file flex gawk gcc gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi \
-  g++ gdisk git gnupg gzip htop imagemagick intltool jq kmod keychain \
-  lib32ncurses-dev lib32stdc++6 libbison-dev libc6-dev-armhf-cross libc6-i386 \
-  libcrypto++-dev libdrm-dev libelf-dev libfdt-dev libfile-fcntllock-perl \
-  libfl-dev libfuse-dev libgmp3-dev liblz4-tool python-is-python3 \
-  libmpc-dev libncurses-dev libncurses5 libncurses5-dev libncursesw5-dev \
-  libpython3-dev libsigsegv2 libssl-dev libtool libudev-dev \
-  libusb-1.0-0-dev linux-base lld llvm locales lsb-release lz4 lzma lzop m4 \
-  make mercurial minicom mtools ncurses-base ncurses-term net-tools \
-  nfs-kernel-server ntpdate openssh-client openssh-server openssl p7zip \
-  p7zip-full parallel parted patch patchutils pbzip2 perl pigz pixz \
-  pkg-config pv python3 python3-dev \
-  python3-distutils python3-pip python3-setuptools \
-  qemu-user-static rar rdfind rename ripgrep rsync sed squashfs-tools \
-  subversion sudo swig tar texinfo tree u-boot-tools udev unzip util-linux \
-  uuid uuid-dev uuid-runtime vim wget whiptail xfsprogs xsltproc xxd \
-  xz-utils zip zlib1g-dev zstd binwalk
-
-if [ $? -ne 0 ]; then
-  echo "install dependency failed"
-  exit 1
-fi
-
+  fakeroot fdisk file flex gawk gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi \
+  gdisk git gnupg gzip htop imagemagick jq kmod lib32ncurses-dev \
+  lib32stdc++6 libbison-dev libc6-dev-armhf-cross libc6-i386 libcrypto++-dev \
+  libelf-dev libfdt-dev libfile-fcntllock-perl libfl-dev libfuse-dev \
+  libgcc-12-dev-arm64-cross libgmp3-dev liblz4-tool libmpc-dev libncurses-dev \
+  libncurses5 libncurses5-dev libncursesw5-dev libpython2.7-dev \
+  libpython3-dev libssl-dev libusb-1.0-0-dev linux-base lld llvm locales \
+  lsb-release lz4 lzma lzop make mtools ncurses-base ncurses-term \
+  nfs-kernel-server ntpdate openssl p7zip p7zip-full parallel parted patch \
+  patchutils pbzip2 pigz pixz pkg-config pv python2 python2-dev python3 \
+  python3-dev python3-distutils python3-pip python3-setuptools \
+  python-is-python3 qemu-user-static rar rdfind rename rsync sed \
+  squashfs-tools swig tar tree u-boot-tools udev unzip util-linux uuid \
+  uuid-dev uuid-runtime vim wget whiptail xfsprogs xsltproc xxd xz-utils \
+  zip zlib1g-dev zstd binwalk ripgrep sudo
 localedef -i zh_CN -f UTF-8 zh_CN.UTF-8 || true
 mkdir -p ${WORKDIR}/rockdev
 mkdir -p ${WORKDIR}/release
@@ -48,20 +39,22 @@ mkdir -p ${WORKDIR}/release
 #                        build uboot                                       #
 #==========================================================================#
 cd ${WORKDIR}/
-git clone https://github.com/yifengyou/rk3588-owl-ai-box-plus-uboot u-boot.git
+git clone -b stable-5.10-rock5 https://github.com/radxa/u-boot.git u-boot.git
 cd u-boot.git
 ls -alh
 
 # apply patch
-if ls "${WORKDIR}/official-uboot/"*.patch >/dev/null 2>&1; then
+if ls "${WORKDIR}/radxa-uboot/"*.patch >/dev/null 2>&1; then
   git config --global user.name yifengyou
   git config --global user.email 842056007@qq.com
-  git am ${WORKDIR}/official-uboot/*.patch
+  git am ${WORKDIR}/radxa-uboot/*.patch
 fi
 
 # build uboot.img
-chmod +x make.sh
-./make.sh rk3588 --burn-key-hash CROSS_COMPILE=aarch64-linux-gnu-
+chmod +x ${WORKDIR}/radxa-uboot/d3588.sh
+cp -a ${WORKDIR}/radxa-uboot/d3588.sh .
+cat d3588.sh
+./d3588.sh
 
 mv uboot.img ${WORKDIR}/release/uboot.img
 ls -alh ${WORKDIR}/release/uboot.img
@@ -71,20 +64,20 @@ md5sum ${WORKDIR}/release/uboot.img
 #                        build kernel                                      #
 #==========================================================================#
 cd ${WORKDIR}
-git clone https://github.com/yifengyou/rk3588-owl-ai-box-plus-kernel kernel.git
-cd kernel.git
+git clone -b rk-6.1-rkr5.1 https://github.com/armbian/linux-rockchip linux-rockchip.git
+cd linux-rockchip.git
 ls -alh
 
 # apply patch
-if ls "${WORKDIR}/official-kernel/"*.patch >/dev/null 2>&1; then
+if ls "${WORKDIR}/armbian_rk-6.1-rkr5.1/"*.patch >/dev/null 2>&1; then
   git config --global user.name yifengyou
   git config --global user.email 842056007@qq.com
-  git am ${WORKDIR}/official-kernel/*.patch
+  git am ${WORKDIR}/armbian_rk-6.1-rkr5.1/*.patch
 fi
 
-if [ -d ${WORKDIR}/official-kernel ]; then
-  ls -alh ${WORKDIR}/official-kernel/
-  cp -a ${WORKDIR}/official-kernel/* .
+if [ -d ${WORKDIR}/armbian_rk-6.1-rkr5.1 ]; then
+  ls -alh ${WORKDIR}/armbian_rk-6.1-rkr5.1/
+  cp -a ${WORKDIR}/armbian_rk-6.1-rkr5.1/* .
   ls -alh
 fi
 
@@ -142,19 +135,19 @@ md5sum arch/arm64/boot/Image
 cp -a arch/arm64/boot/Image ${WORKDIR}/release/
 
 # release dtb
-ls -alh arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb
-md5sum arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb
-cp -a arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb ${WORKDIR}/release/
+ls -alh ./arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb
+md5sum ./arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb
+cp -a ./arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb ${WORKDIR}/release/
 
 # release config
-cp .config ${WORKDIR}/release/config-5.10.66-kdev
-ls -alh ${WORKDIR}/release/config-5.10.66-kdev
-md5sum ${WORKDIR}/release/config-5.10.66-kdev
+cp .config ${WORKDIR}/release/config-6.1-kdev
+ls -alh ${WORKDIR}/release/config-6.1-kdev
+md5sum ${WORKDIR}/release/config-6.1-kdev
 
 # release system map
-cp System.map ${WORKDIR}/release/System.map-5.10.66-kdev
-ls -alh ${WORKDIR}/release/System.map-5.10.66-kdev
-md5sum ${WORKDIR}/release/System.map-5.10.66-kdev
+cp System.map ${WORKDIR}/release/System.map-6.1-kdev
+ls -alh ${WORKDIR}/release/System.map-6.1-kdev
+md5sum ${WORKDIR}/release/System.map-6.1-kdev
 
 # release kernel modules
 if [ -d kos/lib/modules ]; then
