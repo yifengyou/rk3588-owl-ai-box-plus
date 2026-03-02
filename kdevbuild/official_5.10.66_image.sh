@@ -75,7 +75,7 @@ cd ${WORKDIR}
 mkdir -p official-rk3588-image
 cd official-rk3588-image
 
-wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/RK3588-kernel-5.10.66/uboot.img
+wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/official_5.10.66_kernel/uboot.img
 ls -alh uboot.img
 mv uboot.img ${WORKDIR}/rockdev/uboot.img
 ls -alh ${WORKDIR}/rockdev/uboot.img
@@ -89,23 +89,23 @@ cd ${WORKDIR}
 mkdir -p official-rk3588-image
 cd official-rk3588-image
 
-wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/RK3588-kernel-5.10.66/Image
+wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/official_5.10.66_kernel/Image
 ls -alh Image
 md5sum Image
 
-wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/RK3588-kernel-5.10.66/config-5.10.66-kdev
+wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/official_5.10.66_kernel/config-5.10.66-kdev
 ls -alh config-5.10.66-kdev
 md5sum config-5.10.66-kdev
 
-wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/RK3588-kernel-5.10.66/System.map-5.10.66-kdev
+wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/official_5.10.66_kernel/System.map-5.10.66-kdev
 ls -alh System.map-5.10.66-kdev
 md5sum System.map-5.10.66-kdev
 
-wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/RK3588-kernel-5.10.66/rk3588-owl-ai-box-plus-v10.dtb
+wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/official_5.10.66_kernel/rk3588-owl-ai-box-plus-v10.dtb
 ls -alh rk3588-owl-ai-box-plus-v10.dtb
 md5sum rk3588-owl-ai-box-plus-v10.dtb
 
-wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/RK3588-kernel-5.10.66/kos.tar.gz
+wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/official_5.10.66_kernel/kos.tar.gz
 ls -alh kos.tar.gz
 md5sum kos.tar.gz
 tar -xf kos.tar.gz

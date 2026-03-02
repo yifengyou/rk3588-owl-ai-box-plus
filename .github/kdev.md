@@ -9,6 +9,9 @@
 2. ophub_6.6.y (ophub kernel 6.6.y)
     * ophub_6.6.y_image
     * ophub_6.6.y_kernel
+3. armbian_rk-6.1-rkr5.1 (armbian kernel rk-6.1-rkr5.1)
+    * armbian_rk-6.1-rkr5.1_image
+    * armbian_rk-6.1-rkr5.1_kernel
 
 ## kdevbuild
 
@@ -18,6 +21,9 @@
 2. ophub_6.6.y (ophub kernel 6.6.y)
     * ophub_6.6.y_image.sh
     * ophub_6.6.y_kernel.sh
+3. armbian_rk-6.1-rkr5.1 (armbian kernel rk-6.1-rkr5.1)
+   * armbian_rk-6.1-rkr5.1_image.sh
+   * armbian_rk-6.1-rkr5.1_kernel.sh
 
 ## kernel
 
