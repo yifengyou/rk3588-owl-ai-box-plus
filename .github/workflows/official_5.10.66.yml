@@ -1,4 +1,4 @@
-name: Official SDK (5.10.66)
+name: official kernel 5.10.66
 
 on:
   repository_dispatch:
