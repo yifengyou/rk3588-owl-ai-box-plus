@@ -111,7 +111,6 @@ jobs:
   build-image:
     if: ${{ github.event.inputs.build_type == 'all' || github.event.inputs.build_type == 'image' || github.event.inputs.build_type == '' }}
     runs-on: ubuntu-22.04
-    needs: build-kernel
     strategy:
       fail-fast: false
       matrix:

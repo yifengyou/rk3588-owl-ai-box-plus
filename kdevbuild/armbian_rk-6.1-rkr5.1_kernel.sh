@@ -50,11 +50,15 @@ if ls "${WORKDIR}/radxa-uboot/"*.patch >/dev/null 2>&1; then
   git am ${WORKDIR}/radxa-uboot/*.patch
 fi
 
-# build uboot.img
-chmod +x ${WORKDIR}/radxa-uboot/d3588.sh
-cp -a ${WORKDIR}/radxa-uboot/d3588.sh .
-cat d3588.sh
-./d3588.sh
+
+rm -rf spl/u-boot-spl*
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- liontron-d3588_defconfig
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j`nproc`
+
+./make.sh rk3588
+ls -alh fit/uboot.itb
+cp -a fit/uboot.itb uboot.img
+
 
 mv uboot.img ${WORKDIR}/release/uboot.img
 ls -alh ${WORKDIR}/release/uboot.img
