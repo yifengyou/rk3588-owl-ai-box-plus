@@ -69,26 +69,71 @@ cd linux-6.6.y.git
 ls -alh
 
 # apply patch
-if ls "${WORKDIR}/kernel-6.6.y/"*.patch >/dev/null 2>&1; then
+if ls "${WORKDIR}/ophub_6.6.y/"*.patch >/dev/null 2>&1; then
   git config --global user.name yifengyou
   git config --global user.email 842056007@qq.com
-  git am ${WORKDIR}/kernel-6.6.y/*.patch
+  git am ${WORKDIR}/ophub_6.6.y/*.patch
 fi
 
-if [ -d ${WORKDIR}/kernel-6.6.y ]; then
-  ls -alh ${WORKDIR}/kernel-6.6.y/
-  cp -a ${WORKDIR}/kernel-6.6.y/* .
+if [ -d ${WORKDIR}/ophub_6.6.y ]; then
+  ls -alh ${WORKDIR}/ophub_6.6.y/
+  cp -a ${WORKDIR}/ophub_6.6.y/* .
   ls -alh
 fi
 
 # build kernel Image
-if [ -f build.sh ]; then
-  chmod +x build.sh
-  ./build.sh
-else
-  echo "no build.sh found!"
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+  rockchip_linux_defconfig
+
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+  olddefconfig
+
+# check kver
+KVER=$(make LOCALVERSION=-kdev kernelrelease)
+KVER="${KVER/kdev*/kdev}"
+if [[ "$KVER" != *kdev ]]; then
+  echo "ERROR: KVER does not end with 'kdev'"
   exit 1
 fi
+echo "KVER: ${KVER}"
+
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+  dtbs \
+  -j$(nproc)
+
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+  -j$(nproc)
+
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+  modules -j$(nproc)
+
+make ARCH=arm64 \
+  CROSS_COMPILE=aarch64-linux-gnu- \
+  KBUILD_BUILD_USER="builder" \
+  KBUILD_BUILD_HOST="kdevbuilder" \
+  LOCALVERSION=-kdev \
+  INSTALL_MOD_PATH=$(pwd)/kos \
+  modules_install
 
 # release kernel image
 ls -alh arch/arm64/boot/Image
@@ -96,9 +141,9 @@ md5sum arch/arm64/boot/Image
 cp -a arch/arm64/boot/Image ${WORKDIR}/release/
 
 # release dtb
-ls -alh ./arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb
-md5sum ./arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb
-cp -a ./arch/arm64/boot/dts/rockchip/rk3588-evb1-lp4-v10-linux.dtb ${WORKDIR}/release/
+ls -alh ./arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dtb
+md5sum ./arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dtb
+cp -a ./arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dtb ${WORKDIR}/release/
 
 # release config
 cp .config ${WORKDIR}/release/config-6.6.y-kdev
