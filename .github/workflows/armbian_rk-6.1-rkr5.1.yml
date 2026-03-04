@@ -71,8 +71,8 @@ jobs:
             -w /workspace \
             ubuntu:22.04 \
             bash -c "
-              chmod +x /workspace/kdevbuild/armbian_kernel_rk-6.1-rkr5.1.sh ;
-              /workspace/kdevbuild/armbian_kernel_rk-6.1-rkr5.1.sh
+              chmod +x /workspace/kdevbuild/armbian_rk-6.1-rkr5.1_kernel.sh ;
+              /workspace/kdevbuild/armbian_rk-6.1-rkr5.1_kernel.sh
             "
 
       - name: List build output
@@ -83,19 +83,19 @@ jobs:
       - name: Upload Kernel to Release
         uses: ncipollo/release-action@main
         with:
-          tag: Armbian-kernel-rk-6.1-rkr5.1
+          tag: armbian_rk-6.1-rkr5.1_kernel
           artifacts: /builder/release/*
           allowUpdates: true
           removeArtifacts: false
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: | # Armbian-kernel-rk-6.1-rkr5.1
+          body: | # armbian_rk-6.1-rkr5.1_kernel
 
             ## 发布内容
             - **Image** - Linux 内核镜像
             - **dtb/** - 设备树文件
             - **kos.tar.gz** - 内核模块压缩包
-            - **uboot.img** - radxa/u-boot.git
+            - **uboot.img** - uboot 镜像
 
             ## 重要提示
             > **此发布为中间构建产物，非完整固件！**
@@ -405,8 +405,8 @@ jobs:
             -e set_rootfs=${{ matrix.set_rootfs }} \
             ubuntu:22.04 \
             bash -c "
-              chmod +x /workspace/kdevbuild/rk3588-image-official-k5.10.66.sh ;
-              /workspace/kdevbuild/rk3588-image-official-k5.10.66.sh
+              chmod +x /workspace/kdevbuild/armbian_rk-6.1-rkr5.1_image.sh ;
+              /workspace/kdevbuild/armbian_rk-6.1-rkr5.1_image.sh
             "
 
       - name: List build output
@@ -417,14 +417,13 @@ jobs:
       - name: Upload Image to Release
         uses: ncipollo/release-action@main
         with:
-          tag: RK3588-Image-k5.10.66
+          tag: armbian_rk-6.1-rkr5.1_image
           artifacts: /builder/release/*
           allowUpdates: true
           removeArtifacts: false
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: |
-            # RK3588-Image-k5.10.66 (Official)
+          body: | # armbian_rk-6.1-rkr5.1_image
 
             ## 系统密码
 

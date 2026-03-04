@@ -44,25 +44,25 @@ cd u-boot.git
 ls -alh
 
 # apply patch
-if ls "${WORKDIR}/radxa-uboot/"*.patch >/dev/null 2>&1; then
+if ls ${WORKDIR}/radxa-uboot/*.patch >/dev/null 2>&1; then
   git config --global user.name yifengyou
   git config --global user.email 842056007@qq.com
   git am ${WORKDIR}/radxa-uboot/*.patch
 fi
 
+tool=$(which aarch64-linux-gnu-gcc)
+export CROSS_COMPILE_ARM64="${tool%gcc}"
+echo "using gcc: [${CROSS_COMPILE_ARM64}]"
 
 rm -rf spl/u-boot-spl*
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- liontron-d3588_defconfig
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j`nproc`
-
+make CROSS_COMPILE=${CROSS_COMPILE_ARM64} rockchip-rk3588_defconfig
+make CROSS_COMPILE=${CROSS_COMPILE_ARM64} -j$(nproc)
 ./make.sh rk3588
-ls -alh fit/uboot.itb
-cp -a fit/uboot.itb uboot.img
-
-
 mv uboot.img ${WORKDIR}/release/uboot.img
+
 ls -alh ${WORKDIR}/release/uboot.img
 md5sum ${WORKDIR}/release/uboot.img
+
 
 #==========================================================================#
 #                        build kernel                                      #
