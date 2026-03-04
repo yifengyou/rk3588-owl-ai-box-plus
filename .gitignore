@@ -2,6 +2,5 @@
 *.o
 *.tmp
 *.cmd
-*.patch
 *.git
 deprecated
