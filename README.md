@@ -6,13 +6,25 @@
 
 ![](./images/1734453413200.png)
 
-
 ## 目录
 
 * [开发板基本信息](docs/开发板基本信息.md)
 * [官方SDK构建](docs/官方SDK构建.md)
 
+## 代码仓库
 
+| 内核仓库地址 | 分支 | 内核版本| 状态 | 
+| --- | --- | --- | --- | 
+| https://github.com/armbian/linux-rockchip | rk-6.1-rkr5.1 | 6.1 | 已经引入 |
+| https://github.com/LubanCat/kernel | lbc-develop-6.1 | 6.1 | 已经引入 |
+| https://github.com/friendlyarm/kernel-rockchip | nanopi6-v6.1.y | 6.1 | 已经引入 |
+| https://github.com/radxa/kernel | linux-6.1-stan-rkr5.1 | 6.1 | 已经引入 |
+
+
+* https://github.com/Joshua-Riek/linux-rockchip
+* https://github.com/radxa/kernel
+* https://github.com/rockchip-linux/kernel
+* https://github.com/orangepi-xunlong/linux-orangepi
 
 ---
 
