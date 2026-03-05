@@ -208,7 +208,7 @@ md5sum ${WORKDIR}/rockdev/boot.img
 # rootfs.img   : ${WORKDIR}/rockdev/rootfs.img
 # uboot.img    : ${WORKDIR}/rockdev/uboot.img
 # boot.img     : ${WORKDIR}/rockdev/boot.img
-# RKDevTool    : ${WORKDIR}/rockchip-tools.git/RKDevTool-v3.19-RK3588/
+# RKDevTool    : ${WORKDIR}/rockchip-tools.git/RKDevTool-v3.19-OWL-RK3588/
 # afptool      : ${WORKDIR}/rockchip-tools.git/afptool
 # rkImageMaker : ${WORKDIR}/rockchip-tools.git/rkImageMaker
 # template     : ${WORKDIR}/update_img_tmp/
@@ -222,7 +222,7 @@ md5sum ${WORKDIR}/rockdev/boot.img
 
 #mkdir -p ${WORKDIR}/release
 #mkdir -p ${WORKDIR}/update_img_tmp
-#cp -a ${WORKDIR}/rockchip-tools.git/RKDevTool-v3.19-RK3588 \
+#cp -a ${WORKDIR}/rockchip-tools.git/RKDevTool-v3.19-OWL-RK3588 \
 #  ${WORKDIR}/update_img_tmp/RKDevTool
 #mkdir -p ${WORKDIR}/update_img_tmp/RKDevTool/rockdev/image/
 #
@@ -275,7 +275,7 @@ ls -alh ${WORKDIR}/rockchip-tools.git
 
 mkdir -p ${WORKDIR}/release
 mkdir -p ${WORKDIR}/rockdev_img_tmp
-cp -a ${WORKDIR}/rockchip-tools.git/RKDevTool-v3.19-RK3588 \
+cp -a ${WORKDIR}/rockchip-tools.git/RKDevTool-v3.19-OWL-RK3588 \
   ${WORKDIR}/rockdev_img_tmp/RKDevTool
 mkdir -p ${WORKDIR}/rockdev_img_tmp/RKDevTool/rockdev/image/
 
