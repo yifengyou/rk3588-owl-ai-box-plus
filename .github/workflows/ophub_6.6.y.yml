@@ -430,7 +430,7 @@ jobs:
             - 用户名: root   密码: admin
             - 用户名: admin  密码: admin
 
-            ## 镜像使用指引(文件后缀为rockdev.rar)
+            ## 镜像使用指引
 
             解压后打开RKDevTool.exe，选择'下载镜像'，点击'执行'即可
 

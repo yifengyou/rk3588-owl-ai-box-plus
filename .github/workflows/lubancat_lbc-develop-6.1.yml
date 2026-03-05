@@ -1,4 +1,4 @@
-name: armbian kernel rk-6.1-rkr5.1
+name: lubancat kernel lbc-develop-6.1
 
 on:
   repository_dispatch:
@@ -71,8 +71,8 @@ jobs:
             -w /workspace \
             ubuntu:22.04 \
             bash -c "
-              chmod +x /workspace/kdevbuild/armbian_rk-6.1-rkr5.1_kernel.sh ;
-              /workspace/kdevbuild/armbian_rk-6.1-rkr5.1_kernel.sh
+              chmod +x /workspace/kdevbuild/lubancat_lbc-develop-6.1_kernel.sh ;
+              /workspace/kdevbuild/lubancat_lbc-develop-6.1_kernel.sh
             "
 
       - name: List build output
@@ -83,13 +83,13 @@ jobs:
       - name: Upload Kernel to Release
         uses: ncipollo/release-action@main
         with:
-          tag: armbian_rk-6.1-rkr5.1_kernel
+          tag: lubancat_lbc-develop-6.1_kernel
           artifacts: /builder/release/*
           allowUpdates: true
           removeArtifacts: false
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: | # armbian_rk-6.1-rkr5.1_kernel
+          body: | # lubancat_lbc-develop-6.1_kernel
 
             ## 发布内容
             - **Image** - Linux 内核镜像
@@ -405,8 +405,8 @@ jobs:
             -e set_rootfs=${{ matrix.set_rootfs }} \
             ubuntu:22.04 \
             bash -c "
-              chmod +x /workspace/kdevbuild/armbian_rk-6.1-rkr5.1_image.sh ;
-              /workspace/kdevbuild/armbian_rk-6.1-rkr5.1_image.sh
+              chmod +x /workspace/kdevbuild/lubancat_lbc-develop-6.1_image.sh ;
+              /workspace/kdevbuild/lubancat_lbc-develop-6.1_image.sh
             "
 
       - name: List build output
@@ -417,13 +417,13 @@ jobs:
       - name: Upload Image to Release
         uses: ncipollo/release-action@main
         with:
-          tag: armbian_rk-6.1-rkr5.1_image
+          tag: lubancat_lbc-develop-6.1_image
           artifacts: /builder/release/*
           allowUpdates: true
           removeArtifacts: false
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: | # armbian_rk-6.1-rkr5.1_image
+          body: | # lubancat_lbc-develop-6.1_image
 
             ## 系统密码
 
