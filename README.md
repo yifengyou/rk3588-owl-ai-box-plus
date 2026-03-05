@@ -15,6 +15,8 @@
 
 | 内核仓库地址 | 分支 | 内核版本| 状态 | 
 | --- | --- | --- | --- | 
+| https://github.com/rockchip-linux/kernel | develop-6.1 | 6.1 | 已经引入 |
+| https://github.com/rockchip-linux/kernel | develop-6.6 | 6.6 | 已经引入 |
 | https://github.com/armbian/linux-rockchip | rk-6.1-rkr5.1 | 6.1 | 已经引入 |
 | https://github.com/LubanCat/kernel | lbc-develop-6.1 | 6.1 | 已经引入 |
 | https://github.com/friendlyarm/kernel-rockchip | nanopi6-v6.1.y | 6.1 | 已经引入 |
@@ -24,8 +26,6 @@
 
 * https://github.com/Joshua-Riek/linux-rockchip
 * https://github.com/radxa/kernel
-* https://github.com/rockchip-linux/kernel
-* https://github.com/orangepi-xunlong/linux-orangepi
 
 ---
 
