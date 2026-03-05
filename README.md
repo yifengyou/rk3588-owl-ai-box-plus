@@ -19,6 +19,7 @@
 | https://github.com/LubanCat/kernel | lbc-develop-6.1 | 6.1 | 已经引入 |
 | https://github.com/friendlyarm/kernel-rockchip | nanopi6-v6.1.y | 6.1 | 已经引入 |
 | https://github.com/radxa/kernel | linux-6.1-stan-rkr5.1 | 6.1 | 已经引入 |
+| https://github.com/orangepi-xunlong/linux-orangepi | orange-pi-6.1-rk35xx | 6.1 | 已经引入 |
 
 
 * https://github.com/Joshua-Riek/linux-rockchip
