@@ -1,4 +1,4 @@
-From 8579654058d9a97b69bd785b83fc84219ee2a51a Mon Sep 17 00:00:00 2001
+From 9b3de6f17c13740ba7d04df365259589e8a67760 Mon Sep 17 00:00:00 2001
 From: yifengyou <842056007@qq.com>
 Date: Fri, 6 Mar 2026 06:18:57 +0000
 Subject: [PATCH] adapt owl rk3588 with develop-6.1
@@ -7961,6 +7961,41 @@ index 000000000000..16353e14338f
 +#
 +# end of Rust hacking
 +# end of Kernel hacking
+diff --git a/drivers/pci/controller/dwc/pcie-dw-ep-rockchip.c b/drivers/pci/controller/dwc/pcie-dw-ep-rockchip.c
+index 6e8168472f14..ac5e77cb5644 100644
+--- a/drivers/pci/controller/dwc/pcie-dw-ep-rockchip.c
++++ b/drivers/pci/controller/dwc/pcie-dw-ep-rockchip.c
+@@ -36,7 +36,7 @@
+ 
+ #define to_rockchip_pcie(x) dev_get_drvdata((x)->dev)
+ 
+-#define RK_PCIE_DBG			0
++#define RK_PCIE_DBG			1
+ 
+ #define PCIE_CLIENT_DBG_FIFO_MODE_CON	0x310
+ #define PCIE_CLIENT_DBG_FIFO_PTN_HIT_D0 0x320
+diff --git a/drivers/pci/controller/dwc/pcie-dw-rockchip.c b/drivers/pci/controller/dwc/pcie-dw-rockchip.c
+index f9c84def2614..dedfa7e1edd5 100644
+--- a/drivers/pci/controller/dwc/pcie-dw-rockchip.c
++++ b/drivers/pci/controller/dwc/pcie-dw-rockchip.c
+@@ -33,7 +33,7 @@
+ #include "../../hotplug/gpiophp.h"
+ #include "../../../regulator/internal.h"
+ 
+-#define RK_PCIE_DBG			0
++#define RK_PCIE_DBG			1
+ 
+ #define PCIE_DMA_OFFSET			0x380000
+ 
+@@ -116,7 +116,7 @@
+ #define RK_PCIE_HOTRESET_TMOUT_US	10000
+ #define PORT_LOGIC_LTSSM_STATE_L2(ltssm) \
+ 	((ltssm & PORT_LOGIC_LTSSM_STATE_MASK) == 0x15)
+-#define RK_PCIE_ENUM_HW_RETRYIES	2
++#define RK_PCIE_ENUM_HW_RETRYIES	2000
+ 
+ struct rk_pcie {
+ 	struct dw_pcie			*pci;
 -- 
 2.34.1
 
