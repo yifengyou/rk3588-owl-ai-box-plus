@@ -1,7 +1,7 @@
-From 8579654058d9a97b69bd785b83fc84219ee2a51a Mon Sep 17 00:00:00 2001
+From f983d8f0ec9fa197e3d6d269b8cb7d2dd15d8b20 Mon Sep 17 00:00:00 2001
 From: yifengyou <842056007@qq.com>
-Date: Fri, 6 Mar 2026 06:18:57 +0000
-Subject: [PATCH] adapt owl rk3588 with develop-6.1
+Date: Sun, 8 Mar 2026 17:43:27 +0800
+Subject: [PATCH] adapt owl rk3588 with develop 6.1
 
 Signed-off-by: yifengyou <842056007@qq.com>
 
