@@ -7,10 +7,9 @@ on:
       build_type:
         description: '构建类型'
         required: false
-        default: 'all'
+        default: 'kernel'
         type: choice
         options:
-          - all
           - image
           - kernel
 
@@ -20,7 +19,7 @@ env:
 
 jobs:
   build-kernel:
-    if: ${{ github.event.inputs.build_type == 'all' || github.event.inputs.build_type == 'kernel' || github.event.inputs.build_type == '' }}
+    if: ${{ github.event.inputs.build_type == 'kernel' }}
     runs-on: ubuntu-22.04
 
     steps:
@@ -108,7 +107,7 @@ jobs:
             - **安全提示**：请及时更新补丁、修改默认密码、配置防火墙
 
   build-image:
-    if: ${{ github.event.inputs.build_type == 'all' || github.event.inputs.build_type == 'image' || github.event.inputs.build_type == '' }}
+    if: ${{ github.event.inputs.build_type == 'image' }}
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
