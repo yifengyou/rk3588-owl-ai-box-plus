@@ -291,10 +291,6 @@ jobs:
             set_rootfs: Fedora-Server-Guest-Generic-42-1.1.aarch64.rar
           - set_vendor: fedora
             set_rootfs: Fedora-Server-Guest-Generic-43-1.6.aarch64.rar
-          - set_vendor: fedora
-            set_rootfs: fedora_42_aarch64.rar
-          - set_vendor: fedora
-            set_rootfs: fedora_43_aarch64.rar
           - set_vendor: debian
             set_rootfs: debian_bookworm_12_arm64.rar
           - set_vendor: debian
