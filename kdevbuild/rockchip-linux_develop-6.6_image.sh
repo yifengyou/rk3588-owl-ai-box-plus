@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -uxo pipefail
+set -euxo pipefail
 
 WORKDIR=$(pwd)
 export DEBIAN_FRONTEND=noninteractive
@@ -93,13 +93,13 @@ wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/ro
 ls -alh Image
 md5sum Image
 
-wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/rockchip-linux_develop-6.6_kernel/config-develop-6.6-kdev
-ls -alh config-develop-6.6-kdev
-md5sum config-develop-6.6-kdev
+wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/rockchip-linux_develop-6.6_kernel/config-6.6-kdev
+ls -alh config-6.6-kdev
+md5sum config-6.6-kdev
 
-wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/rockchip-linux_develop-6.6_kernel/System.map-develop-6.6-kdev
-ls -alh System.map-develop-6.6-kdev
-md5sum System.map-develop-6.6-kdev
+wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/rockchip-linux_develop-6.6_kernel/System.map-6.6-kdev
+ls -alh System.map-6.6-kdev
+md5sum System.map-6.6-kdev
 
 wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/rockchip-linux_develop-6.6_kernel/rk3588-owl-ai-box-plus-v10.dtb
 ls -alh rk3588-owl-ai-box-plus-v10.dtb
@@ -132,10 +132,10 @@ mount boot.img /mnt
 
 mkdir -p /mnt/dtb
 cp -a rk3588-owl-ai-box-plus-v10.dtb /mnt/dtb/
-cp -f Image /mnt/vmlinuz-develop-6.6-kdev
-cp -f config-develop-6.6-kdev /mnt/config-develop-6.6-kdev
-cp -f System.map-develop-6.6-kdev /mnt/System.map-develop-6.6-kdev
-touch /mnt/initrd.img-develop-6.6-kdev
+cp -f Image /mnt/vmlinuz-6.6-kdev
+cp -f config-6.6-kdev /mnt/config-6.6-kdev
+cp -f System.map-6.6-kdev /mnt/System.map-6.6-kdev
+touch /mnt/initrd.img-6.6-kdev
 
 cat >/mnt/extlinux.conf <<EOF
 ## /extlinux/extlinux.conf
@@ -152,16 +152,16 @@ timeout 90
 
 
 label l0
-	menu label Linux kernel develop-6.6-kdev
-	linux vmlinuz-develop-6.6-kdev
-	initrd initrd.img-develop-6.6-kdev
+	menu label Linux kernel 6.6-kdev
+	linux vmlinuz-6.6-kdev
+	initrd initrd.img-6.6-kdev
 	fdt /dtb/rk3588-owl-ai-box-plus-v10.dtb
 	append root=/dev/mmcblk0p3 rootwait rw console=ttyS2,1500000 console=tty1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory net.ifnames=0 biosdevname=0 level=10 loglevel=10 selinux=0 crashkernel=384M-:128M systemd.mask=systemd-growfs@-.service rockchip.dmc_freq=528000 video=HDMI-A-1:1920x1080@60
 
 label l0r
-	menu label Linux kernel develop-6.6-kdev (rescue target)
-	linux vmlinuz-develop-6.6-kdev
-	initrd initrd.img-develop-6.6-kdev
+	menu label Linux kernel 6.6-kdev (rescue target)
+	linux vmlinuz-6.6-kdev
+	initrd initrd.img-6.6-kdev
 	fdt /dtb/rk3588-owl-ai-box-plus-v10.dtb
 	append root=/dev/mmcblk0p3 rootwait rw console=ttyS2,1500000 console=tty1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory net.ifnames=0 biosdevname=0 level=10 loglevel=10 selinux=0 crashkernel=384M-:128M single
 
