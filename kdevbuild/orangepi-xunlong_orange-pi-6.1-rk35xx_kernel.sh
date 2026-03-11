@@ -91,7 +91,7 @@ make ARCH=arm64 \
   KBUILD_BUILD_USER="builder" \
   KBUILD_BUILD_HOST="kdevbuilder" \
   LOCALVERSION=-kdev \
-  rockchip_linux_defconfig
+  owl_rk3588_defconfig
 
 make ARCH=arm64 \
   CROSS_COMPILE=aarch64-linux-gnu- \
@@ -115,7 +115,7 @@ make ARCH=arm64 \
   KBUILD_BUILD_HOST="kdevbuilder" \
   LOCALVERSION=-kdev \
   dtbs \
-   -j$(nproc)
+  -j$(nproc)
 
 ls -alh arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb
 

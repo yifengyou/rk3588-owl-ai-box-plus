@@ -93,13 +93,13 @@ wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/or
 ls -alh Image
 md5sum Image
 
-wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/orangepi-xunlong_orange-pi-6.1-rk35xx_kernel/config-orange-pi-6.1-rk35xx-kdev
-ls -alh config-orange-pi-6.1-rk35xx-kdev
-md5sum config-orange-pi-6.1-rk35xx-kdev
+wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/orangepi-xunlong_orange-pi-6.1-rk35xx_kernel/config-6.1-kdev
+ls -alh config-6.1-kdev
+md5sum config-6.1-kdev
 
-wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/orangepi-xunlong_orange-pi-6.1-rk35xx_kernel/System.map-orange-pi-6.1-rk35xx-kdev
-ls -alh System.map-orange-pi-6.1-rk35xx-kdev
-md5sum System.map-orange-pi-6.1-rk35xx-kdev
+wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/orangepi-xunlong_orange-pi-6.1-rk35xx_kernel/System.map-6.1-kdev
+ls -alh System.map-6.1-kdev
+md5sum System.map-6.1-kdev
 
 wget -c https://github.com/yifengyou/rk3588-owl-ai-box-plus/releases/download/orangepi-xunlong_orange-pi-6.1-rk35xx_kernel/rk3588-owl-ai-box-plus-v10.dtb
 ls -alh rk3588-owl-ai-box-plus-v10.dtb
@@ -132,10 +132,10 @@ mount boot.img /mnt
 
 mkdir -p /mnt/dtb
 cp -a rk3588-owl-ai-box-plus-v10.dtb /mnt/dtb/
-cp -f Image /mnt/vmlinuz-orange-pi-6.1-rk35xx-kdev
-cp -f config-orange-pi-6.1-rk35xx-kdev /mnt/config-orange-pi-6.1-rk35xx-kdev
-cp -f System.map-orange-pi-6.1-rk35xx-kdev /mnt/System.map-orange-pi-6.1-rk35xx-kdev
-touch /mnt/initrd.img-orange-pi-6.1-rk35xx-kdev
+cp -f Image /mnt/vmlinuz-6.1-kdev
+cp -f config-6.1-kdev /mnt/config-6.1-kdev
+cp -f System.map-6.1-kdev /mnt/System.map-6.1-kdev
+touch /mnt/initrd.img-6.1-kdev
 
 cat >/mnt/extlinux.conf <<EOF
 ## /extlinux/extlinux.conf
@@ -153,15 +153,15 @@ timeout 90
 
 label l0
 	menu label Linux kernel orange-pi-6.1-rk35xx-kdev
-	linux vmlinuz-orange-pi-6.1-rk35xx-kdev
-	initrd initrd.img-orange-pi-6.1-rk35xx-kdev
+	linux vmlinuz-6.1-kdev
+	initrd initrd.img-6.1-kdev
 	fdt /dtb/rk3588-owl-ai-box-plus-v10.dtb
 	append root=/dev/mmcblk0p3 rootwait rw console=ttyS2,1500000 console=tty1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory net.ifnames=0 biosdevname=0 level=10 loglevel=10 selinux=0 crashkernel=384M-:128M systemd.mask=systemd-growfs@-.service rockchip.dmc_freq=528000 video=HDMI-A-1:1920x1080@60
 
 label l0r
 	menu label Linux kernel orange-pi-6.1-rk35xx-kdev (rescue target)
-	linux vmlinuz-orange-pi-6.1-rk35xx-kdev
-	initrd initrd.img-orange-pi-6.1-rk35xx-kdev
+	linux vmlinuz-6.1-kdev
+	initrd initrd.img-6.1-kdev
 	fdt /dtb/rk3588-owl-ai-box-plus-v10.dtb
 	append root=/dev/mmcblk0p3 rootwait rw console=ttyS2,1500000 console=tty1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory net.ifnames=0 biosdevname=0 level=10 loglevel=10 selinux=0 crashkernel=384M-:128M single
 
