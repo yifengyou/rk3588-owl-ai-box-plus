@@ -100,6 +100,9 @@ make ARCH=arm64 \
   LOCALVERSION=-kdev \
   olddefconfig
 
+# show config
+cat .config
+
 # check kver
 KVER=$(make LOCALVERSION=-kdev kernelrelease)
 KVER="${KVER/kdev*/kdev}"
