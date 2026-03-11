@@ -1,4 +1,4 @@
-name: orangepi-xunlong kernel orange-pi-6.1-rk35xx
+name: orangepi kernel orange-pi-6.1-rk35xx
 
 on:
   repository_dispatch:
