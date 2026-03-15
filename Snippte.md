@@ -60,10 +60,15 @@ label debug
 EOF
 
 
-
+mount /dev/mmcblk0p2 /boot/
 scp -r 192.168.66.188:/rockchip/kernel/rockchip-linux_kernel.git/arch/arm64/boot/Image /boot/Image
+
+
 scp -r 192.168.66.188:/rockchip/kernel/rockchip-linux_kernel.git/kos.tar.gz /root
-tar -zcvf 
+
+cd /root && rm -rf lib && tar xvf kos.tar.gz && rm -rf /lib/modules/6.6.89-kdev && mv lib/modules/6.6.89-kdev /lib/modules/
+
+
 
 ```
 
