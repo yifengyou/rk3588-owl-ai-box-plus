@@ -1,4 +1,4 @@
-From 6ec28239cae831b7ea144aea3b5111f2f939532f Mon Sep 17 00:00:00 2001
+From e751e58cc0856ec4100396de2b108a395ca409b5 Mon Sep 17 00:00:00 2001
 From: yifengyou <842056007@qq.com>
 Date: Thu, 5 Mar 2026 09:44:03 +0000
 Subject: [PATCH] adapt for owl rk3588 develop 6.6
@@ -70,11 +70,12 @@ index 000000000000..99ab413502c3
 +
 diff --git a/arch/arm64/configs/owl_rk3588_defconfig b/arch/arm64/configs/owl_rk3588_defconfig
 new file mode 100644
-index 000000000000..2878dd142b98
+index 000000000000..c7e6f53eb566
 --- /dev/null
 +++ b/arch/arm64/configs/owl_rk3588_defconfig
-@@ -0,0 +1,700 @@
+@@ -0,0 +1,711 @@
 +CONFIG_WERROR=y
++# CONFIG_LOCALVERSION_AUTO is not set
 +CONFIG_DEFAULT_HOSTNAME="localhost"
 +CONFIG_SYSVIPC=y
 +CONFIG_NO_HZ=y
@@ -315,6 +316,16 @@ index 000000000000..2878dd142b98
 +CONFIG_CANFD_RK3576=y
 +CONFIG_USB_RTL8150=y
 +CONFIG_USB_RTL8152=y
++CONFIG_B43=y
++CONFIG_B43_SDIO=y
++CONFIG_B43_DEBUG=y
++CONFIG_B43LEGACY=y
++CONFIG_BRCMSMAC=y
++CONFIG_BRCMFMAC=y
++CONFIG_BRCMFMAC_USB=y
++CONFIG_BRCMFMAC_PCIE=y
++CONFIG_BRCM_TRACING=y
++CONFIG_BRCMDBG=y
 +CONFIG_WL_ROCKCHIP=y
 +CONFIG_WIFI_BUILD_MODULE=y
 +CONFIG_AP6XXX=m
