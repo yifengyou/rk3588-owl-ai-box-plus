@@ -113,6 +113,44 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - set_vendor: armbian
+            set_rootfs: armbian_bookworm_gnome_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_bookworm_mini_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_bookworm_xfce_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_bullseye_mini_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_forky_gnome_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_forky_mini_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_forky_xfce_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_jammy_gnome_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_jammy_mini_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_jammy_xfce_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_noble_gnome_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_noble_mini_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_noble_xfce_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_plucky_gnome_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_plucky_mini_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_plucky_xfce_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_trixie_gnome_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_trixie_mini_aarch64.rar
+          - set_vendor: armbian
+            set_rootfs: armbian_trixie_xfce_aarch64.rar
           - set_vendor: istoreos
             set_rootfs: istoreos_24.10.1_arm64.rar
           - set_vendor: istoreos
@@ -311,44 +349,6 @@ jobs:
             set_rootfs: centos_8_aarch64.rar
           - set_vendor: centos
             set_rootfs: centos_9_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_bookworm_gnome_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_bookworm_mini_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_bookworm_xfce_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_bullseye_mini_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_forky_gnome_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_forky_mini_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_forky_xfce_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_jammy_gnome_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_jammy_mini_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_jammy_xfce_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_noble_gnome_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_noble_mini_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_noble_xfce_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_plucky_gnome_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_plucky_mini_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_plucky_xfce_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_trixie_gnome_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_trixie_mini_aarch64.rar
-          - set_vendor: armbian
-            set_rootfs: armbian_trixie_xfce_aarch64.rar
 
     steps:
       - name: Checkout
