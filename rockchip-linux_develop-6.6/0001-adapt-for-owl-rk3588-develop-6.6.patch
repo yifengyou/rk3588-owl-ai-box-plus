@@ -1,4 +1,4 @@
-From e751e58cc0856ec4100396de2b108a395ca409b5 Mon Sep 17 00:00:00 2001
+From b643ffdfa76ca29f471eb34207be38e3c31ab043 Mon Sep 17 00:00:00 2001
 From: yifengyou <842056007@qq.com>
 Date: Thu, 5 Mar 2026 09:44:03 +0000
 Subject: [PATCH] adapt for owl rk3588 develop 6.6
@@ -70,10 +70,10 @@ index 000000000000..99ab413502c3
 +
 diff --git a/arch/arm64/configs/owl_rk3588_defconfig b/arch/arm64/configs/owl_rk3588_defconfig
 new file mode 100644
-index 000000000000..c7e6f53eb566
+index 000000000000..a596a6f25a96
 --- /dev/null
 +++ b/arch/arm64/configs/owl_rk3588_defconfig
-@@ -0,0 +1,711 @@
+@@ -0,0 +1,716 @@
 +CONFIG_WERROR=y
 +# CONFIG_LOCALVERSION_AUTO is not set
 +CONFIG_DEFAULT_HOSTNAME="localhost"
@@ -329,6 +329,11 @@ index 000000000000..c7e6f53eb566
 +CONFIG_WL_ROCKCHIP=y
 +CONFIG_WIFI_BUILD_MODULE=y
 +CONFIG_AP6XXX=m
++CONFIG_BCMDHD_PCIE=y
++CONFIG_PCIEASPM_ROCKCHIP_WIFI_EXTENSION=y
++CONFIG_BCMDHD_FW_PATH="/lib/firmware/brcm/fw_bcmdhd.bin"
++CONFIG_BCMDHD_NVRAM_PATH="/lib/firmware/brcm/nvram.txt"
++CONFIG_BCMDHD_STATIC_IF=y
 +CONFIG_INPUT_FF_MEMLESS=y
 +CONFIG_INPUT_EVDEV=y
 +CONFIG_KEYBOARD_ADC=y
@@ -786,5 +791,5 @@ index 000000000000..c7e6f53eb566
 +CONFIG_BLK_DEV_IO_TRACE=y
 +CONFIG_LKDTM=y
 -- 
-2.34.1
+2.43.0
 
