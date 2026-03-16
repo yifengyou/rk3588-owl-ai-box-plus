@@ -136,7 +136,7 @@ if [ -d ${WORKDIR}/firmware ]; then
 fi
 
 # generate boot.img
-dd if=/dev/zero of=boot.img bs=1M count=60
+dd if=/dev/zero of=boot.img bs=1M count=100
 mkfs.ext2 -U 7A3F0000-0000-446A-8000-702F00006273 -L kdevboot boot.img
 mount boot.img /mnt
 
