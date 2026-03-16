@@ -5,7 +5,7 @@
 ```shell
 
 apt-get update
-apt-get install -y vim lrzsz tmux build-essential 
+apt-get install -y vim lrzsz tmux build-essential systemd-timesyncd
 
 ```
 
