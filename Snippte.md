@@ -73,4 +73,25 @@ cd /root && rm -rf lib && tar xvf kos.tar.gz && rm -rf /lib/modules/6.6.89-kdev 
 ```
 
 
+## 安装docker
+
+```shell
+
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
