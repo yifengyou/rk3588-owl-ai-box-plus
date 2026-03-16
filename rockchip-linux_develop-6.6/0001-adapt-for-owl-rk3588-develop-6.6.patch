@@ -1,4 +1,4 @@
-From b643ffdfa76ca29f471eb34207be38e3c31ab043 Mon Sep 17 00:00:00 2001
+From 7fba4c309755064e3caa141d4627513c58ff75fc Mon Sep 17 00:00:00 2001
 From: yifengyou <842056007@qq.com>
 Date: Thu, 5 Mar 2026 09:44:03 +0000
 Subject: [PATCH] adapt for owl rk3588 develop 6.6
@@ -70,10 +70,10 @@ index 000000000000..99ab413502c3
 +
 diff --git a/arch/arm64/configs/owl_rk3588_defconfig b/arch/arm64/configs/owl_rk3588_defconfig
 new file mode 100644
-index 000000000000..a596a6f25a96
+index 000000000000..9347a0fff5fe
 --- /dev/null
 +++ b/arch/arm64/configs/owl_rk3588_defconfig
-@@ -0,0 +1,716 @@
+@@ -0,0 +1,717 @@
 +CONFIG_WERROR=y
 +# CONFIG_LOCALVERSION_AUTO is not set
 +CONFIG_DEFAULT_HOSTNAME="localhost"
@@ -249,6 +249,7 @@ index 000000000000..a596a6f25a96
 +# CONFIG_ATA_SFF is not set
 +CONFIG_MD=y
 +CONFIG_NETDEVICES=y
++CONFIG_TUN=y
 +# CONFIG_NET_VENDOR_3COM is not set
 +# CONFIG_NET_VENDOR_ADAPTEC is not set
 +# CONFIG_NET_VENDOR_AGERE is not set
@@ -791,5 +792,5 @@ index 000000000000..a596a6f25a96
 +CONFIG_BLK_DEV_IO_TRACE=y
 +CONFIG_LKDTM=y
 -- 
-2.43.0
+2.34.1
 
