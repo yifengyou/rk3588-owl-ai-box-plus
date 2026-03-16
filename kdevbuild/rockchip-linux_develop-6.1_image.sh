@@ -125,8 +125,14 @@ fi
 
 # update rootfs with firmware
 if [ -d ${WORKDIR}/firmware ]; then
+  find ${WORKDIR}/firmware
+  mount ${WORKDIR}/rockdev/rootfs.img /mnt
   mkdir -p /mnt/lib/firmware
   cp -a ${WORKDIR}/firmware/* /mnt/lib/firmware/
+  ls -alh /mnt/lib/firmware/
+  sync
+  umount /mnt
+  sync
 fi
 
 # generate boot.img
