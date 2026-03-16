@@ -14,11 +14,10 @@ apt-get install -y vim lrzsz tmux build-essential
 
 ```shell
 e2fsck -f /dev/mmcblk0p2
-
 resize2fs /dev/mmcblk0p2
-
-
 mount /dev/mmcblk0p2 /boot
+
+
 
 cat > /boot/extlinux.conf << EOF
 ## /extlinux/extlinux.conf
@@ -61,6 +60,7 @@ EOF
 
 
 mount /dev/mmcblk0p2 /boot/
+
 scp -r 192.168.66.188:/rockchip/kernel/rockchip-linux_kernel.git/arch/arm64/boot/Image /boot/Image
 
 
@@ -79,6 +79,13 @@ cd /root && rm -rf lib && tar xvf kos.tar.gz && rm -rf /lib/modules/6.6.89-kdev 
 
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
+
+docker run hello-world
+
+systemctl status docker
+docker ps
+
+
 
 ```
 
