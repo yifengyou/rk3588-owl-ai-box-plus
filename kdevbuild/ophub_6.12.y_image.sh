@@ -123,7 +123,11 @@ if [ -d kos/lib/modules ]; then
   sync
 fi
 
-# update rootfs with firmware skip
+# update rootfs with firmware
+if [ -d ${WORKDIR}/firmware ]; then
+  mkdir -p /mnt/lib/firmware
+  cp -a ${WORKDIR}/firmware/* /mnt/lib/firmware/
+fi
 
 # generate boot.img
 dd if=/dev/zero of=boot.img bs=1M count=60
