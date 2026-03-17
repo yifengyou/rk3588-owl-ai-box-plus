@@ -16,6 +16,8 @@ ssh-keygen -t rsa
 
 ## 安装docker
 
+
+
 ```shell
 
 curl -fsSL https://get.docker.com -o get-docker.sh
@@ -33,6 +35,8 @@ docker ps
 
 
 ## 安装kvm虚拟机
+
+
 
 
 ```shell

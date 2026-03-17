@@ -8,7 +8,6 @@
 
 ## 目录
 
-
 * [开发板基本信息](docs/开发板基本信息.md)
 * [官方SDK构建](docs/官方SDK构建.md)
 * [内核构建](docs/内核构建/内核构建.md)
@@ -31,7 +30,6 @@
   * [Armbian Debian 11 bullseye](docs/系统/armbian/debian11.md)
 
 
-
 ## 内核代码仓库
 
 | 内核仓库地址 | 分支 | 内核版本| 状态 | 
@@ -43,7 +41,6 @@
 | https://github.com/friendlyarm/kernel-rockchip | nanopi6-v6.1.y | 6.1 | 已经引入 |
 | https://github.com/radxa/kernel | linux-6.1-stan-rkr5.1 | 6.1 | 已经引入 |
 | https://github.com/orangepi-xunlong/linux-orangepi | orange-pi-6.1-rk35xx | 6.1 | 已经引入 |
-
 
 ---
 

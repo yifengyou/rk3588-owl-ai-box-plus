@@ -112,13 +112,17 @@ tar -xf kos.tar.gz
 
 # update rootfs with ko
 if [ -d kos/lib/modules ]; then
-  ls -alh kos/lib/modules
-  find kos -name "*.ko"
-  mount ${WORKDIR}/rockdev/rootfs.img /mnt
-  rm -rf /mnt/lib/modules/* || :
-  mkdir -p /mnt/lib/modules/
-  cp -a kos/lib/modules/* /mnt/lib/modules
-  sync
+  mount "${WORKDIR}/rockdev/rootfs.img" /mnt || exit 1
+  REQ=$(du -sk kos/lib/modules | awk '{print $1}')
+  AVAIL=$(df -k /mnt | tail -1 | awk '{print $4}')
+  if [ "$AVAIL" -ge "$REQ" ]; then
+    rm -rf /mnt/lib/modules/*
+    mkdir -p /mnt/lib/modules
+    cp -a kos/lib/modules/* /mnt/lib/modules
+    sync
+  else
+    echo "Warning: Insufficient space on /mnt (Need: ${REQ}KB, Have: ${AVAIL}KB)"
+  fi
   umount /mnt
   sync
 fi
@@ -136,7 +140,7 @@ if [ -d ${WORKDIR}/firmware ]; then
 fi
 
 # generate boot.img
-dd if=/dev/zero of=boot.img bs=1M count=120
+dd if=/dev/zero of=boot.img bs=1M count=256
 mkfs.ext2 -U 7A3F0000-0000-446A-8000-702F00006273 -L kdevboot boot.img
 mount boot.img /mnt
 
