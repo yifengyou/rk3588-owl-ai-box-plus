@@ -17,4 +17,8 @@
     * [按键驱动](docs/驱动/按键驱动/按键驱动.md)
     * [RTC时钟驱动](docs/驱动/RTC时钟驱动/RTC时钟驱动.md)
     * [风扇驱动](docs/驱动/风扇驱动/风扇驱动.md)
+* [系统](docs/系统.md)
+  * [Armbian Debian 13 trixie](docs/系统/armbian/debian13.md)
+  * [Armbian Debian 12 bookworm](docs/系统/armbian/debian12.md)
+  * [Armbian Debian 11 bullseye](docs/系统/armbian/debian11.md)
 
