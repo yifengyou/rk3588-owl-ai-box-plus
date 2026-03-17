@@ -71,14 +71,61 @@ virt-install \
   --graphics none \
   --console pty,target_type=serial \
   --accelerate
-  
-
-
 
 ```
 
 
+## geekbench跑分测试
 
+
+```shell
+
+wget -c https://cdn.geekbench.com/Geekbench-6.6.0-LinuxARMPreview.tar.gz
+tar -xvf Geekbench-6.6.0-LinuxARMPreview.tar.gz
+cd Geekbench-6.6.0-LinuxARMPreview
+./geekbench6
+
+```
+
+
+![](./images/18889103783000.png)
+
+![](./images/19131151527200.png)
+
+![](./images/19138732261300.png)
+
+![](./images/19145867585900.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
 
 
 
