@@ -14,6 +14,16 @@ ssh-keygen -t rsa
 ```
 
 
+## xrdp远程桌面
+
+```shell
+apt-get install -y xorgxrdp xrdp 
+
+```
+
+![](./images/17329610748700.png)
+
+
 ## 安装docker
 
 
@@ -41,15 +51,21 @@ docker ps
 
 ```shell
 
+# 安装virsh、qemu依赖
 apt install -y qemu-kvm libvirt-daemon-system \
   libvirt-clients bridge-utils virtinst \
   qemu-efi-aarch64 ovmf qemu-utils ipxe-qemu
 
+# 创建虚拟机测试
+virsh net-start default
+cd /tmp/
+qemu-img create -f qcow2 rootfs.qcow2 500G
+touch /tmp/123.iso
 virt-install \
-  --name my-vm \
+  --name vm \
   --memory 2048 \
   --vcpus 2 \
-  --disk path=test.qcow2,size=20,format=qcow2,bus=virtio \
+  --disk path=rootfs.qcow2,size=20,format=qcow2,bus=virtio \
   --cdrom /tmp/123.iso \
   --osinfo generic \
   --graphics none \
@@ -57,23 +73,7 @@ virt-install \
   --accelerate
   
 
-qemu-system-aarch64 \
-  -m 2048 \
-  -cpu host \
-  -accel kvm \
-  -drive file=/tmp/rootfs.qcow2,format=qcow2 \
-  -netdev user,id=net0 -device virtio-net-device,netdev=net0 \
-  -nographic
-  
-  
-qemu-system-aarch64 \
-  -M virt \
-  -cpu host \
-  -accel kvm \
-  -m 512 \
-  -drive if=pflash,format=raw,readonly=on,file=/usr/share/qemu-efi-aarch64/QEMU_EFI.fd \
-  -drive file=test.img,format=qcow2 \
-  -nographic \
+
 
 ```
 
