@@ -7,7 +7,7 @@
 * [驱动](docs/驱动.md)
     * [PCIE驱动](docs/驱动/PCIE驱动/PCIE驱动.md)
     * [网卡驱动](docs/驱动/网卡驱动/网卡驱动.md)
-    * [Broadcom BCM43752无线网卡驱动](docs/驱动/WLAN驱动/BCM43752无线网卡驱动.md)
+    * [WIFI驱动](docs/驱动/WLAN驱动/BCM43752无线网卡驱动.md)
     * [蓝牙驱动](docs/驱动/蓝牙驱动/蓝牙驱动.md)
     * [LED驱动](docs/驱动/LED驱动/LED驱动.md)
     * [USB驱动](docs/驱动/USB驱动/USB驱动.md)
