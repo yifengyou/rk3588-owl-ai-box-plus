@@ -1,0 +1,4230 @@
+From 0ba99f5d32e56509702498ebc9b83ad9cff36b8c Mon Sep 17 00:00:00 2001
+From: yifengyou <842056007@qq.com>
+Date: Wed, 4 Mar 2026 10:54:44 +0000
+Subject: [PATCH] adapt for owl rk3588 with ophub 6.12.y
+
+Signed-off-by: yifengyou <842056007@qq.com>
+
+diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
+index c86c6a973..505b7a977 100644
+--- a/arch/arm64/boot/dts/rockchip/Makefile
++++ b/arch/arm64/boot/dts/rockchip/Makefile
+@@ -260,6 +260,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-quartzpro64.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-roc-rt.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-rock-5-itx.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-rock-5b.dtb
++dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-owl-ai-box-plus-v10.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-rock-5b-pcie-ep.dtbo
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-rock-5b-pcie-srns.dtbo
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-rock-5b-plus.dtb
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dts b/arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dts
+new file mode 100644
+index 000000000..ff1ba5ed5
+--- /dev/null
++++ b/arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dts
+@@ -0,0 +1,1446 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2021 Rockchip Electronics Co., Ltd.
++ *
++ */
++
++/dts-v1/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/pinctrl/rockchip.h>
++#include <dt-bindings/soc/rockchip,vop2.h>
++#include <dt-bindings/usb/pd.h>
++#include "rk3588.dtsi"
++
++/ {
++	model = "Rockchip RK3588 EVB1 V10 Board";
++	compatible = "rockchip,rk3588-evb1-v10", "rockchip,rk3588";
++
++	aliases {
++		ethernet0 = &gmac0;
++		mmc0 = &sdhci;
++	};
++
++	chosen {
++		stdout-path = "serial2:1500000n8";
++	};
++
++	adc-keys {
++		compatible = "adc-keys";
++		io-channels = <&saradc 1>;
++		io-channel-names = "buttons";
++		keyup-threshold-microvolt = <1800000>;
++		poll-interval = <100>;
++
++		button-vol-up {
++			label = "Volume Up";
++			linux,code = <KEY_VOLUMEUP>;
++			press-threshold-microvolt = <17000>;
++		};
++
++		button-vol-down {
++			label = "Volume Down";
++			linux,code = <KEY_VOLUMEDOWN>;
++			press-threshold-microvolt = <417000>;
++		};
++
++		button-menu {
++			label = "Menu";
++			linux,code = <KEY_MENU>;
++			press-threshold-microvolt = <890000>;
++		};
++
++		button-escape {
++			label = "Escape";
++			linux,code = <KEY_ESC>;
++			press-threshold-microvolt = <1235000>;
++		};
++	};
++
++	analog-sound {
++		compatible = "simple-audio-card";
++		pinctrl-names = "default";
++		pinctrl-0 = <&hp_detect>;
++		simple-audio-card,name = "RK3588 EVB1 Audio";
++		simple-audio-card,aux-devs = <&amp_headphone>, <&amp_speaker>;
++		simple-audio-card,bitclock-master = <&masterdai>;
++		simple-audio-card,format = "i2s";
++		simple-audio-card,frame-master = <&masterdai>;
++		simple-audio-card,hp-det-gpios = <&gpio1 RK_PD5 GPIO_ACTIVE_LOW>;
++		simple-audio-card,mclk-fs = <256>;
++		simple-audio-card,pin-switches = "Headphones", "Speaker";
++		simple-audio-card,routing =
++			"Speaker Amplifier INL", "LOUT2",
++			"Speaker Amplifier INR", "ROUT2",
++			"Speaker", "Speaker Amplifier OUTL",
++			"Speaker", "Speaker Amplifier OUTR",
++			"Headphones Amplifier INL", "LOUT1",
++			"Headphones Amplifier INR", "ROUT1",
++			"Headphones", "Headphones Amplifier OUTL",
++			"Headphones", "Headphones Amplifier OUTR",
++			"LINPUT1", "Onboard Microphone",
++			"RINPUT1", "Onboard Microphone",
++			"LINPUT2", "Microphone Jack",
++			"RINPUT2", "Microphone Jack";
++		simple-audio-card,widgets =
++			"Microphone", "Microphone Jack",
++			"Microphone", "Onboard Microphone",
++			"Headphone", "Headphones",
++			"Speaker", "Speaker";
++
++		simple-audio-card,cpu {
++			sound-dai = <&i2s0_8ch>;
++		};
++
++		masterdai: simple-audio-card,codec {
++			sound-dai = <&es8388>;
++			system-clock-frequency = <12288000>;
++		};
++	};
++
++	amp_headphone: headphone-amplifier {
++		compatible = "simple-audio-amplifier";
++		enable-gpios = <&gpio1 RK_PD2 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&headphone_amplifier_en>;
++		sound-name-prefix = "Headphones Amplifier";
++	};
++
++	amp_speaker: speaker-amplifier {
++		compatible = "simple-audio-amplifier";
++		enable-gpios = <&gpio1 RK_PD3 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&speaker_amplifier_en>;
++		sound-name-prefix = "Speaker Amplifier";
++	};
++
++	backlight: backlight {
++		compatible = "pwm-backlight";
++		power-supply = <&vcc12v_dcin>;
++		pwms = <&pwm2 0 25000 0>;
++	};
++
++	hdmi0-con {
++		compatible = "hdmi-connector";
++		type = "a";
++
++		port {
++			hdmi0_con_in: endpoint {
++				remote-endpoint = <&hdmi0_out_con>;
++			};
++		};
++	};
++
++	hdmi1-con {
++		compatible = "hdmi-connector";
++		type = "a";
++
++		port {
++			hdmi1_con_in: endpoint {
++				remote-endpoint = <&hdmi1_out_con>;
++			};
++		};
++	};
++
++	pcie20_avdd0v85: regulator-pcie20-avdd0v85 {
++		compatible = "regulator-fixed";
++		regulator-name = "pcie20_avdd0v85";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <850000>;
++		regulator-max-microvolt = <850000>;
++		vin-supply = <&avdd_0v85_s0>;
++	};
++
++	pcie20_avdd1v8: regulator-pcie20-avdd1v8 {
++		compatible = "regulator-fixed";
++		regulator-name = "pcie20_avdd1v8";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		vin-supply = <&avcc_1v8_s0>;
++	};
++
++	pcie30_avdd0v75: regulator-pcie30-avdd0v75 {
++		compatible = "regulator-fixed";
++		regulator-name = "pcie30_avdd0v75";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <750000>;
++		regulator-max-microvolt = <750000>;
++		vin-supply = <&avdd_0v75_s0>;
++	};
++
++	pcie30_avdd1v8: regulator-pcie30-avdd1v8 {
++		compatible = "regulator-fixed";
++		regulator-name = "pcie30_avdd1v8";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		vin-supply = <&avcc_1v8_s0>;
++	};
++
++	vbus5v0_typec: regulator-vbus5v0-typec {
++		compatible = "regulator-fixed";
++		enable-active-high;
++		gpio = <&gpio4 RK_PD0 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&typec5v_pwren>;
++		regulator-name = "vbus5v0_typec";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&vcc5v0_usb>;
++	};
++
++	vcc12v_dcin: regulator-vcc12v-dcin {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc12v_dcin";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <12000000>;
++		regulator-max-microvolt = <12000000>;
++	};
++
++	vcc3v3_pcie30: regulator-vcc3v3-pcie30 {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc3v3_pcie30";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		enable-active-high;
++		gpios = <&gpio3 RK_PC3 GPIO_ACTIVE_HIGH>;
++		startup-delay-us = <5000>;
++		vin-supply = <&vcc12v_dcin>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&vcc3v3_pcie30_en>;
++	};
++
++	vcc3v3_pciewl_vbat: regulator-vcc3v3-pciewl-vbat {
++		compatible = "regulator-fixed";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-name = "wlan-vbat";
++		vin-supply = <&vcc_3v3_s0>;
++	};
++
++	vcc3v3_wlan: regulator-vcc3v3-wlan {
++		compatible = "regulator-fixed";
++		enable-active-high;
++		gpios = <&gpio3 RK_PB1 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&wifi_pwren>;
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-name = "wlan-en";
++		vin-supply = <&vcc3v3_pciewl_vbat>;
++	};
++
++	vcc5v0_host: regulator-vcc5v0-host {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc5v0_host";
++		regulator-boot-on;
++		regulator-always-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		enable-active-high;
++		gpio = <&gpio4 RK_PB0 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&vcc5v0_host_en>;
++		vin-supply = <&vcc5v0_usb>;
++	};
++
++	vcc5v0_sys: regulator-vcc5v0-sys {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc5v0_sys";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&vcc12v_dcin>;
++	};
++
++	vcc5v0_usbdcin: regulator-vcc5v0-usbdcin {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc5v0_usbdcin";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&vcc12v_dcin>;
++	};
++
++	vcc5v0_usb: regulator-vcc5v0-usb {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc5v0_usb";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&vcc5v0_usbdcin>;
++	};
++
++	vccio_wl: regulator-vccio-wl {
++		compatible = "regulator-fixed";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		regulator-name = "wlan-vddio";
++		vin-supply = <&vcc_1v8_s0>;
++	};
++};
++
++&combphy0_ps {
++	status = "okay";
++};
++
++&combphy1_ps {
++	status = "okay";
++};
++
++&combphy2_psu {
++	status = "okay";
++};
++
++&cpu_b0 {
++	cpu-supply = <&vdd_cpu_big0_s0>;
++};
++
++&cpu_b1 {
++	cpu-supply = <&vdd_cpu_big0_s0>;
++};
++
++&cpu_b2 {
++	cpu-supply = <&vdd_cpu_big1_s0>;
++};
++
++&cpu_b3 {
++	cpu-supply = <&vdd_cpu_big1_s0>;
++};
++
++&cpu_l0 {
++	cpu-supply = <&vdd_cpu_lit_s0>;
++};
++
++&cpu_l1 {
++	cpu-supply = <&vdd_cpu_lit_s0>;
++};
++
++&cpu_l2 {
++	cpu-supply = <&vdd_cpu_lit_s0>;
++};
++
++&cpu_l3 {
++	cpu-supply = <&vdd_cpu_lit_s0>;
++};
++
++&gmac0 {
++	clock_in_out = "output";
++	phy-handle = <&rgmii_phy>;
++	phy-mode = "rgmii-rxid";
++	pinctrl-0 = <&gmac0_miim
++		     &gmac0_tx_bus2
++		     &gmac0_rx_bus2
++		     &gmac0_rgmii_clk
++		     &gmac0_rgmii_bus>;
++	pinctrl-names = "default";
++	rx_delay = <0x00>;
++	tx_delay = <0x43>;
++	status = "okay";
++};
++
++&gpu {
++	mali-supply = <&vdd_gpu_s0>;
++	sram-supply = <&vdd_gpu_mem_s0>;
++	status = "okay";
++};
++
++&hdmi0 {
++	status = "okay";
++};
++
++&hdmi0_in {
++	hdmi0_in_vp0: endpoint {
++		remote-endpoint = <&vp0_out_hdmi0>;
++	};
++};
++
++&hdmi0_out {
++	hdmi0_out_con: endpoint {
++		remote-endpoint = <&hdmi0_con_in>;
++	};
++};
++
++&hdmi1 {
++	status = "okay";
++};
++
++&hdmi1_in {
++	hdmi1_in_vp1: endpoint {
++		remote-endpoint = <&vp1_out_hdmi1>;
++	};
++};
++
++&hdmi1_out {
++	hdmi1_out_con: endpoint {
++		remote-endpoint = <&hdmi1_con_in>;
++	};
++};
++
++&hdmi_receiver_cma {
++	status = "okay";
++};
++
++&hdmi_receiver {
++	hpd-gpios = <&gpio2 RK_PB5 GPIO_ACTIVE_LOW>;
++	pinctrl-0 = <&hdmim1_rx_cec &hdmim1_rx_hpdin &hdmim1_rx_scl &hdmim1_rx_sda &hdmirx_hpd>;
++	pinctrl-names = "default";
++	status = "okay";
++};
++
++&hdptxphy0 {
++	status = "okay";
++};
++
++&hdptxphy1 {
++	status = "okay";
++};
++
++&i2c2 {
++	status = "okay";
++
++	usbc0: usb-typec@22 {
++		compatible = "fcs,fusb302";
++		reg = <0x22>;
++		interrupt-parent = <&gpio3>;
++		interrupts = <RK_PB4 IRQ_TYPE_LEVEL_LOW>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&usbc0_int>;
++		vbus-supply = <&vbus5v0_typec>;
++		status = "okay";
++
++		usb_con: connector {
++			compatible = "usb-c-connector";
++			label = "USB-C";
++			data-role = "dual";
++			op-sink-microwatt = <1000000>;
++			power-role = "dual";
++			sink-pdos =
++				<PDO_FIXED(5000, 1000, PDO_FIXED_USB_COMM)>;
++			source-pdos =
++				<PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
++			try-power-role = "source";
++
++			ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				port@0 {
++					reg = <0>;
++
++					usbc0_orien_sw: endpoint {
++						remote-endpoint = <&usbdp_phy0_orientation_switch>;
++					};
++				};
++
++				port@1 {
++					reg = <1>;
++
++					usbc0_role_sw: endpoint {
++						remote-endpoint = <&dwc3_0_role_switch>;
++					};
++				};
++
++				port@2 {
++					reg = <2>;
++
++					dp_altmode_mux: endpoint {
++						remote-endpoint = <&usbdp_phy0_dp_altmode_mux>;
++					};
++				};
++			};
++		};
++	};
++
++	hym8563: rtc@51 {
++		compatible = "haoyu,hym8563";
++		reg = <0x51>;
++		#clock-cells = <0>;
++		clock-output-names = "hym8563";
++		pinctrl-names = "default";
++		pinctrl-0 = <&hym8563_int>;
++		interrupt-parent = <&gpio0>;
++		interrupts = <RK_PD4 IRQ_TYPE_LEVEL_LOW>;
++		wakeup-source;
++	};
++};
++
++&i2c7 {
++	status = "okay";
++
++	es8388: audio-codec@11 {
++		compatible = "everest,es8388", "everest,es8328";
++		reg = <0x11>;
++		clocks = <&cru I2S0_8CH_MCLKOUT>;
++		assigned-clocks = <&cru I2S0_8CH_MCLKOUT>;
++		assigned-clock-rates = <12288000>;
++		AVDD-supply = <&avcc_1v8_codec_s0>;
++		DVDD-supply = <&avcc_1v8_codec_s0>;
++		HPVDD-supply = <&vcc_3v3_s0>;
++		PVDD-supply = <&vcc_3v3_s0>;
++		#sound-dai-cells = <0>;
++	};
++};
++
++&i2s0_8ch {
++	pinctrl-0 = <&i2s0_lrck
++		     &i2s0_mclk
++		     &i2s0_sclk
++		     &i2s0_sdi0
++		     &i2s0_sdo0>;
++	status = "okay";
++};
++
++&mdio0 {
++	rgmii_phy: ethernet-phy@1 {
++		/* RTL8211F */
++		compatible = "ethernet-phy-id001c.c916";
++		reg = <0x1>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&rtl8211f_rst>;
++		reset-assert-us = <20000>;
++		reset-deassert-us = <100000>;
++		reset-gpios = <&gpio4 RK_PB3 GPIO_ACTIVE_LOW>;
++	};
++};
++
++&pcie2x1l0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pcie2_0_rst>, <&pcie2_0_wake>, <&pcie2_0_clkreq>, <&wifi_host_wake_irq>;
++	reset-gpios = <&gpio4 RK_PA5 GPIO_ACTIVE_HIGH>;
++	vpcie3v3-supply = <&vcc3v3_wlan>;
++	status = "okay";
++
++	pcie@0,0 {
++		reg = <0x200000 0 0 0 0>;
++		#address-cells = <3>;
++		#size-cells = <2>;
++		ranges;
++		device_type = "pci";
++		bus-range = <0x20 0x2f>;
++
++		wifi: wifi@0,0 {
++			compatible = "pci14e4,449d";
++			reg = <0x210000 0 0 0 0>;
++			clocks = <&hym8563>;
++			clock-names = "lpo";
++		};
++	};
++};
++
++&pcie2x1l1 {
++	reset-gpios = <&gpio4 RK_PA2 GPIO_ACTIVE_HIGH>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pcie2_1_rst>, <&rtl8111_isolate>;
++	status = "okay";
++};
++
++&pcie30phy {
++	status = "okay";
++};
++
++&pcie3x4 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pcie3_reset>;
++	reset-gpios = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;
++	vpcie3v3-supply = <&vcc3v3_pcie30>;
++	status = "okay";
++};
++
++&pd_gpu {
++	domain-supply = <&vdd_gpu_s0>;
++};
++
++&pinctrl {
++	audio {
++		hp_detect: headphone-detect {
++			rockchip,pins = <1 RK_PD5 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		headphone_amplifier_en: headphone-amplifier-en {
++			rockchip,pins = <1 RK_PD2 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		speaker_amplifier_en: speaker-amplifier-en {
++			rockchip,pins = <1 RK_PD3 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
++	rtl8111 {
++		rtl8111_isolate: rtl8111-isolate {
++			rockchip,pins = <1 RK_PA4 RK_FUNC_GPIO &pcfg_pull_up>;
++		};
++	};
++
++	rtl8211f {
++		rtl8211f_rst: rtl8211f-rst {
++			rockchip,pins = <4 RK_PB3 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++	};
++
++	hdmirx {
++		hdmirx_hpd: hdmirx-5v-detection {
++			rockchip,pins = <2 RK_PB5 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
++	hym8563 {
++		hym8563_int: hym8563-int {
++			rockchip,pins = <0 RK_PD4 RK_FUNC_GPIO &pcfg_pull_up>;
++		};
++	};
++
++	pcie2 {
++		pcie2_0_rst: pcie2-0-rst {
++			rockchip,pins = <4 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		pcie2_0_wake: pcie2-0-wake {
++			rockchip,pins = <4 RK_PA4 4 &pcfg_pull_none>;
++		};
++
++		pcie2_0_clkreq: pcie2-0-clkreq {
++			rockchip,pins = <4 RK_PA3 4 &pcfg_pull_none>;
++		};
++
++		pcie2_1_rst: pcie2-1-rst {
++			rockchip,pins = <4 RK_PA2 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
++	pcie3 {
++		pcie3_reset: pcie3-reset {
++			rockchip,pins = <4 RK_PB6 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		vcc3v3_pcie30_en: vcc3v3-pcie30-en {
++			rockchip,pins = <3 RK_PC3 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
++	usb {
++		vcc5v0_host_en: vcc5v0-host-en {
++			rockchip,pins = <4 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
++	usb-typec {
++		typec5v_pwren: typec5v-pwren {
++			rockchip,pins = <4 RK_PD0 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		usbc0_int: usbc0-int {
++			rockchip,pins = <3 RK_PB4 RK_FUNC_GPIO &pcfg_pull_up>;
++		};
++	};
++
++	wlan {
++		wifi_host_wake_irq: wifi-host-wake-irq {
++			rockchip,pins = <3 RK_PA7 RK_FUNC_GPIO &pcfg_pull_down>;
++		};
++
++		wifi_pwren: wifi-pwren {
++			rockchip,pins = <3 RK_PB1 RK_FUNC_GPIO &pcfg_pull_up>;
++		};
++	};
++};
++
++&pwm2 {
++	status = "okay";
++};
++
++&saradc {
++	vref-supply = <&vcc_1v8_s0>;
++	status = "okay";
++};
++
++&sdhci {
++	bus-width = <8>;
++	no-sdio;
++	no-sd;
++	non-removable;
++	mmc-hs400-1_8v;
++	mmc-hs400-enhanced-strobe;
++	status = "okay";
++};
++
++&spi2 {
++	status = "okay";
++	assigned-clocks = <&cru CLK_SPI2>;
++	assigned-clock-rates = <200000000>;
++	num-cs = <2>;
++
++	pmic@0 {
++		compatible = "rockchip,rk806";
++		reg = <0x0>;
++		#gpio-cells = <2>;
++		gpio-controller;
++		interrupt-parent = <&gpio0>;
++		interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
++		pinctrl-0 = <&pmic_pins>, <&rk806_dvs1_null>,
++			    <&rk806_dvs2_null>, <&rk806_dvs3_null>;
++		pinctrl-names = "default";
++		spi-max-frequency = <1000000>;
++		system-power-controller;
++
++		vcc1-supply = <&vcc5v0_sys>;
++		vcc2-supply = <&vcc5v0_sys>;
++		vcc3-supply = <&vcc5v0_sys>;
++		vcc4-supply = <&vcc5v0_sys>;
++		vcc5-supply = <&vcc5v0_sys>;
++		vcc6-supply = <&vcc5v0_sys>;
++		vcc7-supply = <&vcc5v0_sys>;
++		vcc8-supply = <&vcc5v0_sys>;
++		vcc9-supply = <&vcc5v0_sys>;
++		vcc10-supply = <&vcc5v0_sys>;
++		vcc11-supply = <&vcc_2v0_pldo_s3>;
++		vcc12-supply = <&vcc5v0_sys>;
++		vcc13-supply = <&vcc5v0_sys>;
++		vcc14-supply = <&vcc_1v1_nldo_s3>;
++		vcca-supply = <&vcc5v0_sys>;
++
++		rk806_dvs1_null: dvs1-null-pins {
++			pins = "gpio_pwrctrl1";
++			function = "pin_fun0";
++		};
++
++		rk806_dvs2_null: dvs2-null-pins {
++			pins = "gpio_pwrctrl2";
++			function = "pin_fun0";
++		};
++
++		rk806_dvs3_null: dvs3-null-pins {
++			pins = "gpio_pwrctrl3";
++			function = "pin_fun0";
++		};
++
++
++		regulators {
++			vdd_gpu_s0: dcdc-reg1 {
++				/* regulator coupling requires always-on */
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <550000>;
++				regulator-max-microvolt = <950000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_gpu_s0";
++				regulator-enable-ramp-delay = <400>;
++				regulator-coupled-with = <&vdd_gpu_mem_s0>;
++				regulator-coupled-max-spread = <10000>;
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_npu_s0: dcdc-reg2 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <550000>;
++				regulator-max-microvolt = <950000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_npu_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_log_s0: dcdc-reg3 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <675000>;
++				regulator-max-microvolt = <750000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_log_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++					regulator-suspend-microvolt = <750000>;
++				};
++			};
++
++			vdd_vdenc_s0: dcdc-reg4 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <550000>;
++				regulator-max-microvolt = <950000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_vdenc_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++
++			};
++
++			vdd_gpu_mem_s0: dcdc-reg5 {
++				/* regulator coupling requires always-on */
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <675000>;
++				regulator-max-microvolt = <950000>;
++				regulator-ramp-delay = <12500>;
++				regulator-enable-ramp-delay = <400>;
++				regulator-name = "vdd_gpu_mem_s0";
++				regulator-coupled-with = <&vdd_gpu_s0>;
++				regulator-coupled-max-spread = <10000>;
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++
++			};
++
++			vdd_npu_mem_s0: dcdc-reg6 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <675000>;
++				regulator-max-microvolt = <950000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_npu_mem_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++
++			};
++
++			vcc_2v0_pldo_s3: dcdc-reg7 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <2000000>;
++				regulator-max-microvolt = <2000000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_2v0_pldo_s3";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <2000000>;
++				};
++			};
++
++			vdd_vdenc_mem_s0: dcdc-reg8 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <675000>;
++				regulator-max-microvolt = <950000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_vdenc_mem_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd2_ddr_s3: dcdc-reg9 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-name = "vdd2_ddr_s3";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++				};
++			};
++
++			vcc_1v1_nldo_s3: dcdc-reg10 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1100000>;
++				regulator-max-microvolt = <1100000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vcc_1v1_nldo_s3";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <1100000>;
++				};
++			};
++
++			avcc_1v8_s0: pldo-reg1 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "avcc_1v8_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd1_1v8_ddr_s3: pldo-reg2 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd1_1v8_ddr_s3";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <1800000>;
++				};
++			};
++
++			avcc_1v8_codec_s0: pldo-reg3 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "avcc_1v8_codec_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc_3v3_s3: pldo-reg4 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vcc_3v3_s3";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <3300000>;
++				};
++			};
++
++			vccio_sd_s0: pldo-reg5 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vccio_sd_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vccio_1v8_s3: pldo-reg6 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vccio_1v8_s3";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <1800000>;
++				};
++			};
++
++			vdd_0v75_s3: nldo-reg1 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <750000>;
++				regulator-max-microvolt = <750000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_0v75_s3";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <750000>;
++				};
++			};
++
++			vdd2l_0v9_ddr_s3: nldo-reg2 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <900000>;
++				regulator-name = "vdd2l_0v9_ddr_s3";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <900000>;
++				};
++			};
++
++			vdd_0v75_hdmi_edp_s0: nldo-reg3 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <750000>;
++				regulator-max-microvolt = <750000>;
++				regulator-name = "vdd_0v75_hdmi_edp_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			avdd_0v75_s0: nldo-reg4 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <750000>;
++				regulator-max-microvolt = <750000>;
++				regulator-name = "avdd_0v75_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_0v85_s0: nldo-reg5 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <850000>;
++				regulator-max-microvolt = <850000>;
++				regulator-name = "vdd_0v85_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++		};
++	};
++
++	pmic@1 {
++		compatible = "rockchip,rk806";
++		reg = <0x01>;
++		#gpio-cells = <2>;
++		gpio-controller;
++		interrupt-parent = <&gpio0>;
++		interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
++		pinctrl-0 = <&rk806_slave_dvs1_null>, <&rk806_slave_dvs2_null>,
++			    <&rk806_slave_dvs3_null>;
++		pinctrl-names = "default";
++		spi-max-frequency = <1000000>;
++
++		vcc1-supply = <&vcc5v0_sys>;
++		vcc2-supply = <&vcc5v0_sys>;
++		vcc3-supply = <&vcc5v0_sys>;
++		vcc4-supply = <&vcc5v0_sys>;
++		vcc5-supply = <&vcc5v0_sys>;
++		vcc6-supply = <&vcc5v0_sys>;
++		vcc7-supply = <&vcc5v0_sys>;
++		vcc8-supply = <&vcc5v0_sys>;
++		vcc9-supply = <&vcc5v0_sys>;
++		vcc10-supply = <&vcc5v0_sys>;
++		vcc11-supply = <&vcc_2v0_pldo_s3>;
++		vcc12-supply = <&vcc5v0_sys>;
++		vcc13-supply = <&vcc_1v1_nldo_s3>;
++		vcc14-supply = <&vcc_2v0_pldo_s3>;
++		vcca-supply = <&vcc5v0_sys>;
++
++		rk806_slave_dvs1_null: dvs1-null-pins {
++			pins = "gpio_pwrctrl1";
++			function = "pin_fun0";
++		};
++
++		rk806_slave_dvs2_null: dvs2-null-pins {
++			pins = "gpio_pwrctrl2";
++			function = "pin_fun0";
++		};
++
++		rk806_slave_dvs3_null: dvs3-null-pins {
++			pins = "gpio_pwrctrl3";
++			function = "pin_fun0";
++		};
++
++		regulators {
++			vdd_cpu_big1_s0: dcdc-reg1 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-coupled-with = <&vdd_cpu_big1_mem_s0>;
++				regulator-coupled-max-spread = <10000>;
++				regulator-min-microvolt = <550000>;
++				regulator-max-microvolt = <1050000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_cpu_big1_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_cpu_big0_s0: dcdc-reg2 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-coupled-with = <&vdd_cpu_big0_mem_s0>;
++				regulator-coupled-max-spread = <10000>;
++				regulator-min-microvolt = <550000>;
++				regulator-max-microvolt = <1050000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_cpu_big0_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_cpu_lit_s0: dcdc-reg3 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-coupled-with = <&vdd_cpu_lit_mem_s0>;
++				regulator-coupled-max-spread = <10000>;
++				regulator-min-microvolt = <550000>;
++				regulator-max-microvolt = <950000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_cpu_lit_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc_3v3_s0: dcdc-reg4 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vcc_3v3_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_cpu_big1_mem_s0: dcdc-reg5 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-coupled-with = <&vdd_cpu_big1_s0>;
++				regulator-coupled-max-spread = <10000>;
++				regulator-min-microvolt = <675000>;
++				regulator-max-microvolt = <1050000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_cpu_big1_mem_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++
++			vdd_cpu_big0_mem_s0: dcdc-reg6 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-coupled-with = <&vdd_cpu_big0_s0>;
++				regulator-coupled-max-spread = <10000>;
++				regulator-min-microvolt = <675000>;
++				regulator-max-microvolt = <1050000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_cpu_big0_mem_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc_1v8_s0: dcdc-reg7 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vcc_1v8_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_cpu_lit_mem_s0: dcdc-reg8 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-coupled-with = <&vdd_cpu_lit_s0>;
++				regulator-coupled-max-spread = <10000>;
++				regulator-min-microvolt = <675000>;
++				regulator-max-microvolt = <950000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_cpu_lit_mem_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vddq_ddr_s0: dcdc-reg9 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-name = "vddq_ddr_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_ddr_s0: dcdc-reg10 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <675000>;
++				regulator-max-microvolt = <900000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_ddr_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc_1v8_cam_s0: pldo-reg1 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vcc_1v8_cam_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			avdd1v8_ddr_pll_s0: pldo-reg2 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "avdd1v8_ddr_pll_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_1v8_pll_s0: pldo-reg3 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_1v8_pll_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc_3v3_sd_s0: pldo-reg4 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vcc_3v3_sd_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc_2v8_cam_s0: pldo-reg5 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <2800000>;
++				regulator-max-microvolt = <2800000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vcc_2v8_cam_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			pldo6_s3: pldo-reg6 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-name = "pldo6_s3";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <1800000>;
++				};
++			};
++
++			vdd_0v75_pll_s0: nldo-reg1 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <750000>;
++				regulator-max-microvolt = <750000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "vdd_0v75_pll_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_ddr_pll_s0: nldo-reg2 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <850000>;
++				regulator-max-microvolt = <850000>;
++				regulator-name = "vdd_ddr_pll_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			avdd_0v85_s0: nldo-reg3 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <850000>;
++				regulator-max-microvolt = <850000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "avdd_0v85_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			avdd_1v2_cam_s0: nldo-reg4 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "avdd_1v2_cam_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			avdd_1v2_s0: nldo-reg5 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-ramp-delay = <12500>;
++				regulator-name = "avdd_1v2_s0";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++		};
++	};
++};
++
++&sata0 {
++	status = "okay";
++};
++
++&tsadc {
++	status = "okay";
++};
++
++&u2phy0 {
++	status = "okay";
++};
++
++&u2phy0_otg {
++	status = "okay";
++};
++
++&u2phy1 {
++	status = "okay";
++};
++
++&u2phy1_otg {
++	status = "okay";
++};
++
++&u2phy2 {
++	status = "okay";
++};
++
++&u2phy2_host {
++	phy-supply = <&vcc5v0_host>;
++	status = "okay";
++};
++
++&u2phy3 {
++	status = "okay";
++};
++
++&u2phy3_host {
++	phy-supply = <&vcc5v0_host>;
++	status = "okay";
++};
++
++&uart2 {
++	pinctrl-0 = <&uart2m0_xfer>;
++	status = "okay";
++};
++
++&usb_host0_ehci {
++	status = "okay";
++};
++
++&usb_host0_ohci {
++	status = "okay";
++};
++
++&usb_host1_ehci {
++	status = "okay";
++};
++
++&usb_host1_ohci {
++	status = "okay";
++};
++
++&usbdp_phy0 {
++	mode-switch;
++	orientation-switch;
++	sbu1-dc-gpios = <&gpio4 RK_PA6 GPIO_ACTIVE_HIGH>;
++	sbu2-dc-gpios = <&gpio4 RK_PA7 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++
++	port {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		usbdp_phy0_orientation_switch: endpoint@0 {
++			reg = <0>;
++			remote-endpoint = <&usbc0_orien_sw>;
++		};
++
++		usbdp_phy0_dp_altmode_mux: endpoint@1 {
++			reg = <1>;
++			remote-endpoint = <&dp_altmode_mux>;
++		};
++	};
++};
++
++&usbdp_phy1 {
++	/*
++	 * USBDP PHY1 is wired to a female USB3 Type-A connector. Additionally
++	 * the differential pairs 2+3 and the aux channel are wired to a RTD2166,
++	 * which converts the DP signal into VGA. This is exposed on the
++	 * board via a female VGA connector.
++	 */
++	rockchip,dp-lane-mux = <2 3>;
++	status = "okay";
++};
++
++&usb_host0_xhci {
++	dr_mode = "otg";
++	usb-role-switch;
++	status = "okay";
++
++	port {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		dwc3_0_role_switch: endpoint@0 {
++			reg = <0>;
++			remote-endpoint = <&usbc0_role_sw>;
++		};
++	};
++};
++
++&usb_host1_xhci {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&vop {
++	status = "okay";
++};
++
++&vop_mmu {
++	status = "okay";
++};
++
++&vp0 {
++	vp0_out_hdmi0: endpoint@ROCKCHIP_VOP2_EP_HDMI0 {
++		reg = <ROCKCHIP_VOP2_EP_HDMI0>;
++		remote-endpoint = <&hdmi0_in_vp0>;
++	};
++};
++
++&vp1 {
++	vp1_out_hdmi1: endpoint@ROCKCHIP_VOP2_EP_HDMI1 {
++		reg = <ROCKCHIP_VOP2_EP_HDMI1>;
++		remote-endpoint = <&hdmi1_in_vp1>;
++	};
++};
+diff --git a/arch/arm64/configs/owl_rk3588_defconfig b/arch/arm64/configs/owl_rk3588_defconfig
+new file mode 100644
+index 000000000..121e68ed9
+--- /dev/null
++++ b/arch/arm64/configs/owl_rk3588_defconfig
+@@ -0,0 +1,625 @@
++CONFIG_WERROR=y
++# CONFIG_LOCALVERSION_AUTO is not set
++CONFIG_DEFAULT_HOSTNAME="localhost"
++CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_BPF_SYSCALL=y
++CONFIG_BPF_JIT=y
++CONFIG_PREEMPT_VOLUNTARY=y
++CONFIG_RCU_EXPERT=y
++CONFIG_RCU_NOCB_CPU=y
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_LOG_BUF_SHIFT=18
++CONFIG_UCLAMP_TASK=y
++CONFIG_UCLAMP_BUCKETS_COUNT=20
++CONFIG_CGROUPS=y
++CONFIG_CGROUP_SCHED=y
++CONFIG_CFS_BANDWIDTH=y
++CONFIG_UCLAMP_TASK_GROUP=y
++CONFIG_CGROUP_FREEZER=y
++CONFIG_CPUSETS=y
++CONFIG_CGROUP_DEVICE=y
++CONFIG_CGROUP_CPUACCT=y
++CONFIG_CGROUP_BPF=y
++CONFIG_NAMESPACES=y
++CONFIG_USER_NS=y
++CONFIG_BLK_DEV_INITRD=y
++CONFIG_EXPERT=y
++CONFIG_PROFILING=y
++CONFIG_ARCH_ROCKCHIP=y
++# CONFIG_AMPERE_ERRATUM_AC03_CPU_38 is not set
++# CONFIG_ARM64_ERRATUM_826319 is not set
++# CONFIG_ARM64_ERRATUM_827319 is not set
++# CONFIG_ARM64_ERRATUM_824069 is not set
++# CONFIG_ARM64_ERRATUM_819472 is not set
++# CONFIG_ARM64_ERRATUM_832075 is not set
++# CONFIG_ARM64_ERRATUM_1418040 is not set
++# CONFIG_ARM64_ERRATUM_1165522 is not set
++# CONFIG_ARM64_ERRATUM_1463225 is not set
++# CONFIG_ARM64_ERRATUM_1508412 is not set
++# CONFIG_ARM64_ERRATUM_2051678 is not set
++# CONFIG_ARM64_ERRATUM_2077057 is not set
++# CONFIG_ARM64_ERRATUM_2658417 is not set
++# CONFIG_ARM64_ERRATUM_2054223 is not set
++# CONFIG_ARM64_ERRATUM_2067961 is not set
++# CONFIG_ARM64_ERRATUM_2966298 is not set
++# CONFIG_CAVIUM_ERRATUM_22375 is not set
++# CONFIG_CAVIUM_ERRATUM_23154 is not set
++# CONFIG_CAVIUM_ERRATUM_27456 is not set
++# CONFIG_CAVIUM_ERRATUM_30115 is not set
++# CONFIG_CAVIUM_TX2_ERRATUM_219 is not set
++# CONFIG_FUJITSU_ERRATUM_010001 is not set
++# CONFIG_HISILICON_ERRATUM_161600802 is not set
++# CONFIG_QCOM_FALKOR_ERRATUM_1003 is not set
++# CONFIG_QCOM_FALKOR_ERRATUM_1009 is not set
++# CONFIG_QCOM_QDF2400_ERRATUM_0065 is not set
++# CONFIG_QCOM_FALKOR_ERRATUM_E1041 is not set
++# CONFIG_NVIDIA_CARMEL_CNP_ERRATUM is not set
++# CONFIG_SOCIONEXT_SYNQUACER_PREITS is not set
++CONFIG_NR_CPUS=8
++CONFIG_COMPAT=y
++CONFIG_ARMV8_DEPRECATED=y
++CONFIG_SWP_EMULATION=y
++CONFIG_CP15_BARRIER_EMULATION=y
++CONFIG_SETEND_EMULATION=y
++# CONFIG_ARM64_PTR_AUTH is not set
++# CONFIG_ARM64_AMU_EXTN is not set
++# CONFIG_ARM64_TLB_RANGE is not set
++# CONFIG_ARM64_BTI is not set
++# CONFIG_ARM64_E0PD is not set
++# CONFIG_ARM64_MTE is not set
++# CONFIG_ARM64_SVE is not set
++CONFIG_ARM64_PSEUDO_NMI=y
++CONFIG_PM_DEBUG=y
++CONFIG_PM_ADVANCED_DEBUG=y
++CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
++CONFIG_ENERGY_MODEL=y
++CONFIG_CPU_IDLE=y
++CONFIG_ARM_PSCI_CPUIDLE=y
++CONFIG_CPU_FREQ=y
++CONFIG_CPU_FREQ_STAT=y
++CONFIG_CPU_FREQ_GOV_POWERSAVE=y
++CONFIG_CPU_FREQ_GOV_USERSPACE=y
++CONFIG_CPU_FREQ_GOV_ONDEMAND=y
++CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
++CONFIG_CPUFREQ_DT=y
++CONFIG_VIRTUALIZATION=y
++CONFIG_KVM=y
++CONFIG_MODULES=y
++CONFIG_MODULE_FORCE_LOAD=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_FORCE_UNLOAD=y
++CONFIG_PARTITION_ADVANCED=y
++CONFIG_CMDLINE_PARTITION=y
++# CONFIG_IOSCHED_BFQ is not set
++# CONFIG_COMPAT_BRK is not set
++# CONFIG_COMPACTION is not set
++CONFIG_DEFAULT_MMAP_MIN_ADDR=32768
++CONFIG_CMA=y
++CONFIG_NET=y
++CONFIG_PACKET=y
++CONFIG_UNIX=y
++CONFIG_XFRM_USER=y
++CONFIG_NET_KEY=y
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++CONFIG_IP_ADVANCED_ROUTER=y
++CONFIG_IP_MROUTE=y
++# CONFIG_INET_DIAG is not set
++# CONFIG_IPV6_SIT is not set
++CONFIG_NETFILTER=y
++CONFIG_BRIDGE_NETFILTER=y
++CONFIG_NETFILTER_NETLINK_HOOK=y
++CONFIG_NF_CONNTRACK=y
++CONFIG_NF_TABLES=y
++CONFIG_NF_TABLES_INET=y
++CONFIG_NF_TABLES_NETDEV=y
++CONFIG_NFT_NUMGEN=y
++CONFIG_NFT_CT=y
++CONFIG_NFT_CONNLIMIT=y
++CONFIG_NFT_LOG=y
++CONFIG_NFT_LIMIT=y
++CONFIG_NFT_MASQ=y
++CONFIG_NFT_REDIR=y
++CONFIG_NFT_NAT=y
++CONFIG_NFT_TUNNEL=y
++CONFIG_NFT_QUEUE=y
++CONFIG_NFT_QUOTA=y
++CONFIG_NFT_REJECT=y
++CONFIG_NFT_COMPAT=y
++CONFIG_NFT_HASH=y
++CONFIG_NFT_XFRM=y
++CONFIG_NFT_SOCKET=y
++CONFIG_NFT_OSF=y
++CONFIG_NFT_TPROXY=y
++CONFIG_NFT_DUP_NETDEV=y
++CONFIG_NFT_FWD_NETDEV=y
++CONFIG_NFT_REJECT_NETDEV=y
++CONFIG_NETFILTER_XTABLES_COMPAT=y
++CONFIG_NETFILTER_XT_TARGET_HMARK=y
++CONFIG_NETFILTER_XT_TARGET_IDLETIMER=y
++CONFIG_NETFILTER_XT_TARGET_LOG=y
++CONFIG_NETFILTER_XT_TARGET_MARK=y
++CONFIG_NETFILTER_XT_TARGET_NFLOG=y
++CONFIG_NETFILTER_XT_TARGET_NFQUEUE=y
++CONFIG_NETFILTER_XT_TARGET_TEE=y
++CONFIG_NETFILTER_XT_TARGET_TPROXY=y
++CONFIG_NETFILTER_XT_TARGET_TCPMSS=y
++CONFIG_NETFILTER_XT_TARGET_TCPOPTSTRIP=y
++CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y
++CONFIG_NETFILTER_XT_MATCH_BPF=y
++CONFIG_NETFILTER_XT_MATCH_CGROUP=y
++CONFIG_NETFILTER_XT_MATCH_CLUSTER=y
++CONFIG_NETFILTER_XT_MATCH_COMMENT=y
++CONFIG_NETFILTER_XT_MATCH_CONNBYTES=y
++CONFIG_NETFILTER_XT_MATCH_CONNLABEL=y
++CONFIG_NETFILTER_XT_MATCH_CONNLIMIT=y
++CONFIG_NETFILTER_XT_MATCH_CONNMARK=y
++CONFIG_NETFILTER_XT_MATCH_CONNTRACK=y
++CONFIG_NETFILTER_XT_MATCH_CPU=y
++CONFIG_NETFILTER_XT_MATCH_DCCP=y
++CONFIG_NETFILTER_XT_MATCH_DEVGROUP=y
++CONFIG_NETFILTER_XT_MATCH_DSCP=y
++CONFIG_NETFILTER_XT_MATCH_ESP=y
++CONFIG_NETFILTER_XT_MATCH_HASHLIMIT=y
++CONFIG_NETFILTER_XT_MATCH_HELPER=y
++CONFIG_NETFILTER_XT_MATCH_IPCOMP=y
++CONFIG_NETFILTER_XT_MATCH_IPRANGE=y
++CONFIG_NETFILTER_XT_MATCH_IPVS=y
++CONFIG_NETFILTER_XT_MATCH_L2TP=y
++CONFIG_NETFILTER_XT_MATCH_LENGTH=y
++CONFIG_NETFILTER_XT_MATCH_LIMIT=y
++CONFIG_NETFILTER_XT_MATCH_MAC=y
++CONFIG_NETFILTER_XT_MATCH_MARK=y
++CONFIG_NETFILTER_XT_MATCH_MULTIPORT=y
++CONFIG_NETFILTER_XT_MATCH_NFACCT=y
++CONFIG_NETFILTER_XT_MATCH_OSF=y
++CONFIG_NETFILTER_XT_MATCH_OWNER=y
++CONFIG_NETFILTER_XT_MATCH_POLICY=y
++CONFIG_NETFILTER_XT_MATCH_PKTTYPE=y
++CONFIG_NETFILTER_XT_MATCH_QUOTA=y
++CONFIG_NETFILTER_XT_MATCH_RATEEST=y
++CONFIG_NETFILTER_XT_MATCH_REALM=y
++CONFIG_NETFILTER_XT_MATCH_RECENT=y
++CONFIG_NETFILTER_XT_MATCH_SCTP=y
++CONFIG_NETFILTER_XT_MATCH_SOCKET=y
++CONFIG_NETFILTER_XT_MATCH_STATE=y
++CONFIG_NETFILTER_XT_MATCH_STATISTIC=y
++CONFIG_NETFILTER_XT_MATCH_STRING=y
++CONFIG_NETFILTER_XT_MATCH_TCPMSS=y
++CONFIG_NETFILTER_XT_MATCH_TIME=y
++CONFIG_NETFILTER_XT_MATCH_U32=y
++CONFIG_IP_SET=y
++CONFIG_IP_VS=y
++CONFIG_NFT_DUP_IPV4=y
++CONFIG_NFT_FIB_IPV4=y
++CONFIG_NF_TABLES_ARP=y
++CONFIG_NF_LOG_ARP=y
++CONFIG_NF_LOG_IPV4=y
++CONFIG_IP_NF_IPTABLES=y
++CONFIG_IP_NF_MATCH_AH=y
++CONFIG_IP_NF_MATCH_ECN=y
++CONFIG_IP_NF_MATCH_RPFILTER=y
++CONFIG_IP_NF_MATCH_TTL=y
++CONFIG_IP_NF_TARGET_REJECT=y
++CONFIG_IP_NF_TARGET_SYNPROXY=y
++CONFIG_IP_NF_TARGET_ECN=y
++CONFIG_IP_NF_ARP_MANGLE=y
++CONFIG_NF_TABLES_BRIDGE=y
++CONFIG_NF_CONNTRACK_BRIDGE=y
++CONFIG_BRIDGE_NF_EBTABLES=y
++CONFIG_BRIDGE=y
++CONFIG_BRIDGE_MRP=y
++CONFIG_BRIDGE_CFM=y
++CONFIG_OPENVSWITCH=y
++CONFIG_VSOCKETS=y
++CONFIG_CAN=y
++CONFIG_BT=y
++CONFIG_BT_RFCOMM=y
++CONFIG_BT_RFCOMM_TTY=y
++CONFIG_BT_HIDP=y
++CONFIG_BT_HCIBTUSB=y
++CONFIG_BT_HCIUART=y
++CONFIG_BT_HCIUART_ATH3K=y
++CONFIG_BT_HCIBFUSB=y
++CONFIG_BT_HCIVHCI=y
++CONFIG_BT_MRVL=y
++CONFIG_BT_MRVL_SDIO=y
++CONFIG_RFKILL=y
++CONFIG_PCI=y
++CONFIG_PCIEPORTBUS=y
++CONFIG_PCIEASPM_POWERSAVE=y
++# CONFIG_VGA_ARB is not set
++CONFIG_HOTPLUG_PCI=y
++CONFIG_PCIE_ALTERA=y
++CONFIG_PCI_HOST_GENERIC=y
++CONFIG_PCIE_ROCKCHIP_HOST=y
++CONFIG_PCIE_AL=y
++CONFIG_PCI_MESON=y
++CONFIG_PCI_HISI=y
++CONFIG_PCIE_KIRIN=y
++CONFIG_PCIE_DW_PLAT_HOST=y
++CONFIG_PCIE_ROCKCHIP_DW_HOST=y
++CONFIG_DEVTMPFS=y
++CONFIG_DEVTMPFS_MOUNT=y
++CONFIG_DEBUG_DEVRES=y
++CONFIG_CONNECTOR=y
++CONFIG_ARM_SCMI_PROTOCOL=y
++CONFIG_MTD=y
++CONFIG_MTD_CMDLINE_PARTS=y
++CONFIG_MTD_BLOCK=y
++CONFIG_MTD_SPI_NAND=y
++CONFIG_MTD_SPI_NOR=y
++CONFIG_MTD_UBI=y
++CONFIG_ZRAM=y
++CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=1
++CONFIG_BLK_DEV_NVME=y
++CONFIG_SRAM=y
++CONFIG_BLK_DEV_SD=y
++CONFIG_BLK_DEV_SR=y
++CONFIG_SCSI_SCAN_ASYNC=y
++CONFIG_SCSI_SPI_ATTRS=y
++CONFIG_ATA=y
++CONFIG_SATA_AHCI=y
++CONFIG_AHCI_DWC=y
++# CONFIG_ATA_SFF is not set
++CONFIG_MD=y
++CONFIG_NETDEVICES=y
++CONFIG_TUN=y
++CONFIG_VETH=y
++CONFIG_VIRTIO_NET=y
++CONFIG_NLMON=y
++# CONFIG_NET_VENDOR_3COM is not set
++# CONFIG_NET_VENDOR_ADAPTEC is not set
++# CONFIG_NET_VENDOR_AGERE is not set
++# CONFIG_NET_VENDOR_ALTEON is not set
++# CONFIG_NET_VENDOR_AMD is not set
++# CONFIG_NET_VENDOR_ARC is not set
++# CONFIG_NET_VENDOR_ATHEROS is not set
++# CONFIG_NET_VENDOR_BROADCOM is not set
++# CONFIG_NET_VENDOR_CAVIUM is not set
++# CONFIG_NET_VENDOR_CHELSIO is not set
++# CONFIG_NET_VENDOR_CISCO is not set
++# CONFIG_NET_VENDOR_DEC is not set
++# CONFIG_NET_VENDOR_DLINK is not set
++# CONFIG_NET_VENDOR_EMULEX is not set
++# CONFIG_NET_VENDOR_EZCHIP is not set
++# CONFIG_NET_VENDOR_HISILICON is not set
++CONFIG_E100=y
++CONFIG_E1000=y
++CONFIG_E1000E=y
++CONFIG_IGB=y
++CONFIG_IGBVF=y
++CONFIG_IXGBE=y
++CONFIG_IXGBEVF=y
++CONFIG_I40E=y
++CONFIG_I40EVF=y
++CONFIG_ICE=y
++CONFIG_FM10K=y
++CONFIG_IGC=y
++CONFIG_JME=y
++# CONFIG_NET_VENDOR_MARVELL is not set
++# CONFIG_NET_VENDOR_MELLANOX is not set
++# CONFIG_NET_VENDOR_MICREL is not set
++# CONFIG_NET_VENDOR_MICROCHIP is not set
++# CONFIG_NET_VENDOR_MYRI is not set
++# CONFIG_NET_VENDOR_NATSEMI is not set
++# CONFIG_NET_VENDOR_NVIDIA is not set
++# CONFIG_NET_VENDOR_OKI is not set
++# CONFIG_NET_VENDOR_QLOGIC is not set
++# CONFIG_NET_VENDOR_BROCADE is not set
++# CONFIG_NET_VENDOR_QUALCOMM is not set
++# CONFIG_NET_VENDOR_RDC is not set
++CONFIG_8139CP=y
++CONFIG_8139TOO=y
++CONFIG_R8168=y
++CONFIG_R8169=y
++# CONFIG_NET_VENDOR_RENESAS is not set
++# CONFIG_NET_VENDOR_ROCKER is not set
++# CONFIG_NET_VENDOR_SAMSUNG is not set
++# CONFIG_NET_VENDOR_SEEQ is not set
++# CONFIG_NET_VENDOR_SILAN is not set
++# CONFIG_NET_VENDOR_SIS is not set
++# CONFIG_NET_VENDOR_SMSC is not set
++CONFIG_STMMAC_ETH=y
++# CONFIG_DWMAC_GENERIC is not set
++# CONFIG_NET_VENDOR_SUN is not set
++# CONFIG_NET_VENDOR_SYNOPSYS is not set
++# CONFIG_NET_VENDOR_TEHUTI is not set
++# CONFIG_NET_VENDOR_TI is not set
++# CONFIG_NET_VENDOR_VIA is not set
++# CONFIG_NET_VENDOR_WIZNET is not set
++CONFIG_MOTORCOMM_PHY=y
++CONFIG_ROCKCHIP_PHY=y
++CONFIG_USB_RTL8150=y
++CONFIG_USB_RTL8152=y
++CONFIG_INPUT_FF_MEMLESS=y
++CONFIG_INPUT_EVDEV=y
++CONFIG_KEYBOARD_ADC=y
++# CONFIG_KEYBOARD_ATKBD is not set
++CONFIG_KEYBOARD_GPIO=y
++CONFIG_KEYBOARD_GPIO_POLLED=y
++# CONFIG_MOUSE_PS2 is not set
++CONFIG_MOUSE_CYAPA=y
++CONFIG_MOUSE_ELAN_I2C=y
++CONFIG_INPUT_TOUCHSCREEN=y
++CONFIG_TOUCHSCREEN_ATMEL_MXT=y
++CONFIG_TOUCHSCREEN_ELAN=y
++CONFIG_TOUCHSCREEN_USB_COMPOSITE=y
++CONFIG_INPUT_MISC=y
++CONFIG_INPUT_UINPUT=y
++# CONFIG_SERIO is not set
++CONFIG_VT_HW_CONSOLE_BINDING=y
++# CONFIG_LEGACY_PTYS is not set
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++# CONFIG_SERIAL_8250_PCI is not set
++CONFIG_SERIAL_8250_NR_UARTS=32
++CONFIG_SERIAL_8250_RUNTIME_UARTS=15
++CONFIG_SERIAL_8250_DW=y
++CONFIG_SERIAL_OF_PLATFORM=y
++CONFIG_HW_RANDOM=y
++CONFIG_TCG_TPM=y
++CONFIG_TCG_TIS_I2C_INFINEON=y
++CONFIG_I2C_CHARDEV=y
++CONFIG_I2C_RK3X=y
++CONFIG_I3C=y
++CONFIG_SPI=y
++CONFIG_SPI_BITBANG=y
++CONFIG_SPI_ROCKCHIP=y
++CONFIG_SPI_ROCKCHIP_SFC=y
++CONFIG_SPI_SPIDEV=y
++CONFIG_GPIO_SYSFS=y
++CONFIG_GPIO_GENERIC_PLATFORM=y
++CONFIG_GPIO_SYSCON=y
++CONFIG_POWER_RESET_GPIO=y
++CONFIG_POWER_RESET_GPIO_RESTART=y
++CONFIG_SYSCON_REBOOT_MODE=y
++CONFIG_BATTERY_SBS=y
++CONFIG_CHARGER_GPIO=y
++CONFIG_CHARGER_BQ24735=y
++CONFIG_THERMAL=y
++CONFIG_THERMAL_DEFAULT_GOV_POWER_ALLOCATOR=y
++CONFIG_THERMAL_GOV_FAIR_SHARE=y
++CONFIG_THERMAL_GOV_STEP_WISE=y
++CONFIG_THERMAL_GOV_USER_SPACE=y
++CONFIG_THERMAL_GOV_POWER_ALLOCATOR=y
++CONFIG_CPU_THERMAL=y
++CONFIG_DEVFREQ_THERMAL=y
++CONFIG_ROCKCHIP_THERMAL=y
++CONFIG_WATCHDOG=y
++CONFIG_DW_WATCHDOG=y
++CONFIG_MFD_TPS6586X=y
++CONFIG_REGULATOR=y
++CONFIG_REGULATOR_FIXED_VOLTAGE=y
++CONFIG_REGULATOR_ACT8865=y
++CONFIG_REGULATOR_FAN53555=y
++CONFIG_REGULATOR_GPIO=y
++CONFIG_REGULATOR_PWM=y
++CONFIG_REGULATOR_TPS65132=y
++CONFIG_REGULATOR_TPS6586X=y
++CONFIG_MEDIA_SUPPORT=y
++CONFIG_MEDIA_USB_SUPPORT=y
++CONFIG_USB_VIDEO_CLASS=y
++# CONFIG_USB_VIDEO_CLASS_INPUT_EVDEV is not set
++CONFIG_V4L_PLATFORM_DRIVERS=y
++CONFIG_V4L_MEM2MEM_DRIVERS=y
++CONFIG_VIDEO_ROCKCHIP_RGA=y
++CONFIG_VIDEO_IMX415=y
++CONFIG_VIDEO_OV4689=y
++CONFIG_VIDEO_OV5695=y
++CONFIG_VIDEO_OV7251=y
++CONFIG_DRM=y
++CONFIG_DRM_LOAD_EDID_FIRMWARE=y
++CONFIG_DRM_ROCKCHIP=y
++CONFIG_ROCKCHIP_ANALOGIX_DP=y
++CONFIG_ROCKCHIP_CDN_DP=y
++CONFIG_ROCKCHIP_DW_HDMI=y
++CONFIG_ROCKCHIP_DW_MIPI_DSI=y
++CONFIG_ROCKCHIP_INNO_HDMI=y
++CONFIG_ROCKCHIP_LVDS=y
++CONFIG_ROCKCHIP_RGB=y
++CONFIG_DRM_PANEL_SIMPLE=y
++CONFIG_DRM_DISPLAY_CONNECTOR=y
++CONFIG_DRM_SII902X=y
++CONFIG_DRM_DW_HDMI_I2S_AUDIO=y
++CONFIG_DRM_DW_HDMI_CEC=y
++CONFIG_BACKLIGHT_CLASS_DEVICE=y
++CONFIG_BACKLIGHT_PWM=y
++CONFIG_SOUND=y
++CONFIG_SND=y
++CONFIG_SND_HRTIMER=y
++CONFIG_SND_DYNAMIC_MINORS=y
++# CONFIG_SND_SUPPORT_OLD_API is not set
++CONFIG_SND_SEQUENCER=y
++CONFIG_SND_SEQ_DUMMY=y
++# CONFIG_SND_PCI is not set
++# CONFIG_SND_SPI is not set
++CONFIG_SND_USB_AUDIO=y
++CONFIG_SND_SOC=y
++CONFIG_SND_SOC_ES8311=y
++CONFIG_SND_SOC_ES8316=y
++CONFIG_SND_SOC_ES8323=y
++CONFIG_SND_SOC_ES8326=y
++CONFIG_SND_SOC_RK3308=y
++CONFIG_SND_SOC_RK3328=y
++CONFIG_SND_SOC_RT5616=y
++CONFIG_SND_SOC_RT5640=y
++CONFIG_SND_SOC_SPDIF=y
++CONFIG_SND_SIMPLE_CARD=y
++CONFIG_HID_BATTERY_STRENGTH=y
++CONFIG_HIDRAW=y
++CONFIG_UHID=y
++CONFIG_HID_KENSINGTON=y
++CONFIG_HID_MULTITOUCH=y
++CONFIG_USB_HIDDEV=y
++CONFIG_I2C_HID_OF=y
++CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
++# CONFIG_USB_DEFAULT_PERSIST is not set
++CONFIG_USB_OTG=y
++CONFIG_USB_MON=y
++CONFIG_USB_XHCI_HCD=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_ROOT_HUB_TT=y
++CONFIG_USB_EHCI_HCD_PLATFORM=y
++CONFIG_USB_OHCI_HCD=y
++# CONFIG_USB_OHCI_HCD_PCI is not set
++CONFIG_USB_OHCI_HCD_PLATFORM=y
++CONFIG_USB_ACM=y
++CONFIG_USB_STORAGE=y
++CONFIG_USB_UAS=y
++CONFIG_USB_DWC3=y
++CONFIG_USB_DWC2=y
++CONFIG_USB_SERIAL=y
++CONFIG_USB_SERIAL_GENERIC=y
++CONFIG_USB_SERIAL_CP210X=y
++CONFIG_USB_SERIAL_FTDI_SIO=y
++CONFIG_USB_SERIAL_KEYSPAN=y
++CONFIG_USB_SERIAL_PL2303=y
++CONFIG_USB_SERIAL_OTI6858=y
++CONFIG_USB_SERIAL_QUALCOMM=y
++CONFIG_USB_SERIAL_SIERRAWIRELESS=y
++CONFIG_USB_SERIAL_OPTION=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_DEBUG_FILES=y
++CONFIG_USB_GADGET_VBUS_DRAW=500
++CONFIG_USB_CONFIGFS=y
++CONFIG_USB_CONFIGFS_ACM=y
++CONFIG_USB_CONFIGFS_MASS_STORAGE=y
++CONFIG_USB_CONFIGFS_F_FS=y
++CONFIG_USB_CONFIGFS_F_UVC=y
++CONFIG_MMC=y
++CONFIG_MMC_BLOCK_MINORS=32
++CONFIG_MMC_TEST=y
++CONFIG_MMC_SDHCI=y
++CONFIG_MMC_SDHCI_PLTFM=y
++CONFIG_MMC_SDHCI_OF_ARASAN=y
++CONFIG_MMC_SDHCI_OF_DWCMSHC=y
++CONFIG_MMC_DW=y
++CONFIG_MMC_DW_ROCKCHIP=y
++CONFIG_SCSI_UFSHCD=y
++CONFIG_SCSI_UFS_BSG=y
++CONFIG_SCSI_UFS_HWMON=y
++CONFIG_SCSI_UFSHCD_PLATFORM=y
++CONFIG_SCSI_UFS_ROCKCHIP=y
++CONFIG_LEDS_GPIO=y
++CONFIG_LEDS_IS31FL32XX=y
++CONFIG_EDAC=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_HYM8563=y
++CONFIG_DMADEVICES=y
++CONFIG_PL330_DMA=y
++CONFIG_SW_SYNC=y
++CONFIG_DMABUF_HEAPS=y
++CONFIG_DMABUF_SYSFS_STATS=y
++CONFIG_DMABUF_HEAPS_SYSTEM=y
++CONFIG_DMABUF_HEAPS_CMA=y
++CONFIG_STAGING=y
++CONFIG_COMMON_CLK_SCMI=y
++CONFIG_COMMON_CLK_PWM=y
++CONFIG_MAILBOX=y
++CONFIG_ROCKCHIP_MBOX=y
++CONFIG_ROCKCHIP_IOMMU=y
++CONFIG_ARM_SMMU_V3=y
++CONFIG_RPMSG_VIRTIO=y
++CONFIG_ROCKCHIP_IODOMAIN=y
++CONFIG_DEVFREQ_GOV_PERFORMANCE=y
++CONFIG_DEVFREQ_GOV_POWERSAVE=y
++CONFIG_DEVFREQ_GOV_USERSPACE=y
++CONFIG_MEMORY=y
++CONFIG_IIO=y
++CONFIG_ROCKCHIP_SARADC=y
++CONFIG_IIO_ST_LSM6DSX=y
++CONFIG_SENSORS_ISL29018=y
++CONFIG_SENSORS_TSL2563=y
++CONFIG_TSL2583=y
++CONFIG_IIO_SYSFS_TRIGGER=y
++CONFIG_PWM=y
++CONFIG_PWM_ROCKCHIP=y
++CONFIG_PHY_ROCKCHIP_DP=y
++CONFIG_PHY_ROCKCHIP_EMMC=y
++CONFIG_PHY_ROCKCHIP_INNO_HDMI=y
++CONFIG_PHY_ROCKCHIP_INNO_USB2=y
++CONFIG_PHY_ROCKCHIP_INNO_DSIDPHY=y
++CONFIG_PHY_ROCKCHIP_NANENG_COMBO_PHY=y
++CONFIG_PHY_ROCKCHIP_PCIE=y
++CONFIG_PHY_ROCKCHIP_SAMSUNG_DCPHY=y
++CONFIG_PHY_ROCKCHIP_SAMSUNG_HDPTX=y
++CONFIG_PHY_ROCKCHIP_SNPS_PCIE3=y
++CONFIG_PHY_ROCKCHIP_TYPEC=y
++CONFIG_PHY_ROCKCHIP_USB=y
++CONFIG_RAS=y
++CONFIG_NVMEM_ROCKCHIP_EFUSE=y
++CONFIG_NVMEM_ROCKCHIP_OTP=y
++CONFIG_TEE=y
++CONFIG_OPTEE=y
++CONFIG_EXT4_FS=y
++CONFIG_JFS_FS=y
++CONFIG_XFS_FS=y
++CONFIG_GFS2_FS=y
++CONFIG_OCFS2_FS=y
++CONFIG_BTRFS_FS=y
++CONFIG_F2FS_FS=y
++# CONFIG_DNOTIFY is not set
++CONFIG_AUTOFS_FS=y
++CONFIG_FUSE_FS=y
++CONFIG_VIRTIO_FS=y
++CONFIG_OVERLAY_FS=y
++CONFIG_ISO9660_FS=y
++CONFIG_JOLIET=y
++CONFIG_ZISOFS=y
++CONFIG_VFAT_FS=y
++CONFIG_FAT_DEFAULT_CODEPAGE=936
++CONFIG_FAT_DEFAULT_IOCHARSET="utf8"
++CONFIG_EXFAT_FS=y
++CONFIG_NTFS_FS=y
++CONFIG_TMPFS=y
++CONFIG_TMPFS_POSIX_ACL=y
++CONFIG_EFIVAR_FS=y
++CONFIG_JFFS2_FS=y
++CONFIG_UBIFS_FS=y
++CONFIG_UBIFS_FS_ADVANCED_COMPR=y
++CONFIG_SQUASHFS=y
++CONFIG_SQUASHFS_LZO=y
++CONFIG_SQUASHFS_XZ=y
++CONFIG_PSTORE=y
++CONFIG_PSTORE_CONSOLE=y
++CONFIG_PSTORE_RAM=y
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3_ACL=y
++CONFIG_NFS_V4=y
++CONFIG_NFS_SWAP=y
++CONFIG_NLS_DEFAULT="utf8"
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_CODEPAGE_936=y
++CONFIG_NLS_ASCII=y
++CONFIG_NLS_ISO8859_1=y
++CONFIG_NLS_UTF8=y
++CONFIG_UNICODE=y
++CONFIG_CRYPTO_TWOFISH=y
++CONFIG_CRYPTO_ANSI_CPRNG=y
++CONFIG_CRYPTO_USER_API_HASH=y
++CONFIG_CRYPTO_USER_API_SKCIPHER=y
++CONFIG_CRYPTO_GHASH_ARM64_CE=y
++CONFIG_CRYPTO_AES_ARM64_CE_CCM=y
++CONFIG_CRYPTO_DEV_ROCKCHIP=y
++# CONFIG_XZ_DEC_X86 is not set
++# CONFIG_XZ_DEC_POWERPC is not set
++# CONFIG_XZ_DEC_SPARC is not set
++CONFIG_DMA_CMA=y
++CONFIG_PRINTK_TIME=y
++CONFIG_DYNAMIC_DEBUG=y
++CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT=y
++CONFIG_DEBUG_INFO_REDUCED=y
++CONFIG_MAGIC_SYSRQ=y
++CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE=0
++CONFIG_SCHEDSTATS=y
++CONFIG_RCU_CPU_STALL_TIMEOUT=60
++CONFIG_FUNCTION_TRACER=y
++CONFIG_BLK_DEV_IO_TRACE=y
++CONFIG_LKDTM=y
+diff --git a/kos/lib/modules/6.12.77-kdev/build b/kos/lib/modules/6.12.77-kdev/build
+new file mode 120000
+index 000000000..24fdb3ff7
+--- /dev/null
++++ b/kos/lib/modules/6.12.77-kdev/build
+@@ -0,0 +1 @@
++/rockchip/kernel/ophub_6.12.y.git
+\ No newline at end of file
+diff --git a/kos/lib/modules/6.12.77-kdev/modules.alias b/kos/lib/modules/6.12.77-kdev/modules.alias
+new file mode 100644
+index 000000000..4f4c13e00
+--- /dev/null
++++ b/kos/lib/modules/6.12.77-kdev/modules.alias
+@@ -0,0 +1,78 @@
++# Aliases extracted from modules themselves.
++alias i2c:e4000 e4000
++alias i2c:fc2580 fc2580
++alias platform:it9133bx-tuner it913x
++alias platform:it9133ax-tuner it913x
++alias i2c:m88rs6000t m88rs6000t
++alias spi:msi001 msi001
++alias i2c:mt2060 mt2060
++alias i2c:mxl301rf mxl301rf
++alias i2c:qm1d1b0004 qm1d1b0004
++alias i2c:qm1d1c0042 qm1d1c0042
++alias i2c:si2177 si2157
++alias i2c:si2141 si2157
++alias i2c:si2146 si2157
++alias i2c:si2157 si2157
++alias i2c:tda18212 tda18212
++alias i2c:tda18250 tda18250
++alias i2c:tua9001 tua9001
++alias i2c:a8293 a8293
++alias i2c:af9013 af9013
++alias i2c:af9033 af9033
++alias i2c:au8522 au8522_decoder
++alias i2c:cxd2099 cxd2099
++alias i2c:cxd2820r cxd2820r
++alias i2c:helene helene
++alias i2c:lgdt3306a lgdt3306a
++alias i2c:lgdt330x lgdt330x
++alias i2c:m88ds3103b m88ds3103
++alias i2c:m88rs6000 m88ds3103
++alias i2c:m88ds3103 m88ds3103
++alias of:N*T*Csocionext,mn884434-1C* mn88443x
++alias of:N*T*Csocionext,mn884434-1 mn88443x
++alias of:N*T*Csocionext,mn884434-0C* mn88443x
++alias of:N*T*Csocionext,mn884434-0 mn88443x
++alias of:N*T*Csocionext,mn884433C* mn88443x
++alias of:N*T*Csocionext,mn884433 mn88443x
++alias i2c:mn884434-1 mn88443x
++alias i2c:mn884434-0 mn88443x
++alias i2c:mn884433 mn88443x
++alias i2c:mn88472 mn88472
++alias i2c:mn88473 mn88473
++alias i2c:mxl692 mxl692
++alias i2c:tda665x_earthpt1 dvb_pll
++alias i2c:tua6034_friio dvb_pll
++alias i2c:dtt7520x dvb_pll
++alias i2c:tdee4 dvb_pll
++alias i2c:tbmu24112 dvb_pll
++alias i2c:tbdu18132 dvb_pll
++alias i2c:tdtc9251dh0 dvb_pll
++alias i2c:dtos403ih102a dvb_pll
++alias i2c:opera1 dvb_pll
++alias i2c:sd1878_tda8261 dvb_pll
++alias i2c:tbmv dvb_pll
++alias i2c:tdhu2 dvb_pll
++alias i2c:tded4 dvb_pll
++alias i2c:tda665x dvb_pll
++alias i2c:tua6034 dvb_pll
++alias i2c:env57h1xd5 dvb_pll
++alias i2c:tua6010xs dvb_pll
++alias i2c:unknown_1 dvb_pll
++alias i2c:z201 dvb_pll
++alias i2c:dtt759x dvb_pll
++alias i2c:dtt7579 dvb_pll
++alias i2c:rtl2830 rtl2830
++alias i2c:rtl2832 rtl2832
++alias i2c:si2165 si2165
++alias i2c:si2168 si2168
++alias i2c:sp2 sp2
++alias i2c:stv090x stv090x
++alias i2c:stv6110x stv6110x
++alias i2c:tc90522ter tc90522
++alias i2c:tc90522sat tc90522
++alias i2c:tda10071_cx24118 tda10071
++alias i2c:ts2022 ts2020
++alias i2c:ts2020 ts2020
++alias of:N*T*Csony,cxd2880C* cxd2880_spi
++alias of:N*T*Csony,cxd2880 cxd2880_spi
++alias spi:cxd2880 cxd2880_spi
+diff --git a/kos/lib/modules/6.12.77-kdev/modules.builtin b/kos/lib/modules/6.12.77-kdev/modules.builtin
+new file mode 100644
+index 000000000..1502f372a
+--- /dev/null
++++ b/kos/lib/modules/6.12.77-kdev/modules.builtin
+@@ -0,0 +1,633 @@
++kernel/arch/arm64/kvm/kvm.ko
++kernel/arch/arm64/crypto/ghash-ce.ko
++kernel/arch/arm64/crypto/aes-ce-cipher.ko
++kernel/arch/arm64/crypto/aes-ce-ccm.ko
++kernel/arch/arm64/crypto/aes-ce-blk.ko
++kernel/kernel/configs.ko
++kernel/mm/zsmalloc.ko
++kernel/fs/binfmt_script.ko
++kernel/fs/mbcache.ko
++kernel/fs/nfs_common/nfs_acl.ko
++kernel/fs/nfs_common/grace.ko
++kernel/fs/quota/quota_tree.ko
++kernel/fs/configfs/configfs.ko
++kernel/fs/ext4/ext4.ko
++kernel/fs/jbd2/jbd2.ko
++kernel/fs/squashfs/squashfs.ko
++kernel/fs/fat/fat.ko
++kernel/fs/fat/vfat.ko
++kernel/fs/exfat/exfat.ko
++kernel/fs/isofs/isofs.ko
++kernel/fs/nfs/nfs.ko
++kernel/fs/nfs/nfsv3.ko
++kernel/fs/nfs/nfsv4.ko
++kernel/fs/exportfs/exportfs.ko
++kernel/fs/lockd/lockd.ko
++kernel/fs/nls/nls_base.ko
++kernel/fs/nls/nls_cp437.ko
++kernel/fs/nls/nls_cp936.ko
++kernel/fs/nls/nls_ascii.ko
++kernel/fs/nls/nls_iso8859-1.ko
++kernel/fs/nls/nls_utf8.ko
++kernel/fs/nls/nls_ucs2_utils.ko
++kernel/fs/unicode/utf8data.ko
++kernel/fs/ntfs3/ntfs3.ko
++kernel/fs/jffs2/jffs2.ko
++kernel/fs/ubifs/ubifs.ko
++kernel/fs/autofs/autofs4.ko
++kernel/fs/fuse/fuse.ko
++kernel/fs/fuse/virtiofs.ko
++kernel/fs/overlayfs/overlay.ko
++kernel/fs/jfs/jfs.ko
++kernel/fs/xfs/xfs.ko
++kernel/fs/ocfs2/ocfs2.ko
++kernel/fs/ocfs2/ocfs2_stackglue.ko
++kernel/fs/ocfs2/ocfs2_stack_o2cb.ko
++kernel/fs/ocfs2/dlmfs/ocfs2_dlmfs.ko
++kernel/fs/ocfs2/cluster/ocfs2_nodemanager.ko
++kernel/fs/ocfs2/dlm/ocfs2_dlm.ko
++kernel/fs/btrfs/btrfs.ko
++kernel/fs/gfs2/gfs2.ko
++kernel/fs/f2fs/f2fs.ko
++kernel/fs/pstore/pstore.ko
++kernel/fs/pstore/ramoops.ko
++kernel/fs/efivarfs/efivarfs.ko
++kernel/crypto/crypto.ko
++kernel/crypto/crypto_engine.ko
++kernel/crypto/crypto_algapi.ko
++kernel/crypto/aead.ko
++kernel/crypto/crypto_skcipher.ko
++kernel/crypto/bpf_crypto_skcipher.ko
++kernel/crypto/crypto_hash.ko
++kernel/crypto/akcipher.ko
++kernel/crypto/sig.ko
++kernel/crypto/kpp.ko
++kernel/crypto/crypto_acompress.ko
++kernel/crypto/cryptomgr.ko
++kernel/crypto/cmac.ko
++kernel/crypto/hmac.ko
++kernel/crypto/md5.ko
++kernel/crypto/sha1_generic.ko
++kernel/crypto/sha256_generic.ko
++kernel/crypto/sha512_generic.ko
++kernel/crypto/sha3_generic.ko
++kernel/crypto/blake2b_generic.ko
++kernel/crypto/ecb.ko
++kernel/crypto/cbc.ko
++kernel/crypto/des_generic.ko
++kernel/crypto/twofish_generic.ko
++kernel/crypto/twofish_common.ko
++kernel/crypto/aes_generic.ko
++kernel/crypto/deflate.ko
++kernel/crypto/crc32c_generic.ko
++kernel/crypto/crc32_generic.ko
++kernel/crypto/lzo.ko
++kernel/crypto/lzo-rle.ko
++kernel/crypto/xxhash_generic.ko
++kernel/crypto/rng.ko
++kernel/crypto/ansi_cprng.ko
++kernel/crypto/drbg.ko
++kernel/crypto/jitterentropy_rng.ko
++kernel/crypto/af_alg.ko
++kernel/crypto/algif_hash.ko
++kernel/crypto/algif_skcipher.ko
++kernel/crypto/zstd.ko
++kernel/crypto/ecc.ko
++kernel/crypto/ecdh_generic.ko
++kernel/crypto/xor.ko
++kernel/block/bsg.ko
++kernel/block/mq-deadline.ko
++kernel/block/kyber-iosched.ko
++kernel/arch/arm64/lib/xor-neon.ko
++kernel/lib/math/rational.ko
++kernel/lib/crypto/libcryptoutils.ko
++kernel/lib/crypto/libaes.ko
++kernel/lib/crypto/gf128mul.ko
++kernel/lib/crypto/libdes.ko
++kernel/lib/crypto/libsha1.ko
++kernel/lib/crypto/libsha256.ko
++kernel/lib/linear_ranges.ko
++kernel/lib/crc16.ko
++kernel/lib/crc-itu-t.ko
++kernel/lib/crc32.ko
++kernel/lib/libcrc32c.ko
++kernel/lib/xxhash.ko
++kernel/lib/zlib_inflate/zlib_inflate.ko
++kernel/lib/zlib_deflate/zlib_deflate.ko
++kernel/lib/reed_solomon/reed_solomon.ko
++kernel/lib/lzo/lzo_compress.ko
++kernel/lib/lzo/lzo_decompress.ko
++kernel/lib/lz4/lz4_decompress.ko
++kernel/lib/zstd/zstd_compress.ko
++kernel/lib/zstd/zstd_decompress.ko
++kernel/lib/zstd/zstd_common.ko
++kernel/lib/xz/xz_dec.ko
++kernel/lib/raid6/raid6_pq.ko
++kernel/lib/ts_kmp.ko
++kernel/lib/ts_bm.ko
++kernel/lib/ts_fsm.ko
++kernel/lib/glob.ko
++kernel/lib/dim/dimlib.ko
++kernel/lib/fonts/font.ko
++kernel/lib/oid_registry.ko
++kernel/lib/ucs2_string.ko
++kernel/drivers/phy/rockchip/phy-rockchip-dp.ko
++kernel/drivers/phy/rockchip/phy-rockchip-emmc.ko
++kernel/drivers/phy/rockchip/phy-rockchip-inno-dsidphy.ko
++kernel/drivers/phy/rockchip/phy-rockchip-inno-hdmi.ko
++kernel/drivers/phy/rockchip/phy-rockchip-inno-usb2.ko
++kernel/drivers/phy/rockchip/phy-rockchip-naneng-combphy.ko
++kernel/drivers/phy/rockchip/phy-rockchip-pcie.ko
++kernel/drivers/phy/rockchip/phy-rockchip-samsung-dcphy.ko
++kernel/drivers/phy/rockchip/phy-rockchip-samsung-hdptx.ko
++kernel/drivers/phy/rockchip/phy-rockchip-snps-pcie3.ko
++kernel/drivers/phy/rockchip/phy-rockchip-typec.ko
++kernel/drivers/phy/rockchip/phy-rockchip-usb.ko
++kernel/drivers/pinctrl/pinctrl-rockchip.ko
++kernel/drivers/gpio/gpio-generic.ko
++kernel/drivers/gpio/gpio-rockchip.ko
++kernel/drivers/gpio/gpio-syscon.ko
++kernel/drivers/pwm/pwm-rockchip.ko
++kernel/drivers/leds/led-class.ko
++kernel/drivers/leds/leds-gpio.ko
++kernel/drivers/leds/leds-is31fl32xx.ko
++kernel/drivers/pci/controller/pci-host-common.ko
++kernel/drivers/pci/controller/pci-host-generic.ko
++kernel/drivers/pci/controller/pcie-altera.ko
++kernel/drivers/pci/controller/pcie-rockchip-host.ko
++kernel/drivers/pci/controller/dwc/pcie-dw-rkvendor.ko
++kernel/drivers/pci/controller/dwc/pcie-kirin.ko
++kernel/drivers/pci/controller/dwc/pci-meson.ko
++kernel/drivers/video/backlight/backlight.ko
++kernel/drivers/video/backlight/pwm_bl.ko
++kernel/drivers/clk/clk-pwm.ko
++kernel/drivers/clk/clk-scmi.ko
++kernel/drivers/dma/pl330.ko
++kernel/drivers/soc/rockchip/io-domain.ko
++kernel/drivers/pmdomain/arm/scmi_perf_domain.ko
++kernel/drivers/pmdomain/arm/scmi_pm_domain.ko
++kernel/drivers/virtio/virtio.ko
++kernel/drivers/virtio/virtio_ring.ko
++kernel/drivers/regulator/fixed.ko
++kernel/drivers/regulator/act8865-regulator.ko
++kernel/drivers/regulator/fan53555.ko
++kernel/drivers/regulator/gpio-regulator.ko
++kernel/drivers/regulator/pwm-regulator.ko
++kernel/drivers/regulator/tps6586x-regulator.ko
++kernel/drivers/regulator/tps65132-regulator.ko
++kernel/drivers/reset/reset-scmi.ko
++kernel/drivers/tty/n_null.ko
++kernel/drivers/tty/serial/serial_base.ko
++kernel/drivers/tty/serial/8250/8250.ko
++kernel/drivers/tty/serial/8250/8250_base.ko
++kernel/drivers/tty/serial/8250/8250_dw.ko
++kernel/drivers/tty/serial/8250/8250_exar.ko
++kernel/drivers/tty/serial/8250/8250_fsl.ko
++kernel/drivers/tty/serial/8250/8250_of.ko
++kernel/drivers/tty/serial/8250/8250_pericom.ko
++kernel/drivers/tty/serial/serial_mctrl_gpio.ko
++kernel/drivers/char/hw_random/rng-core.ko
++kernel/drivers/char/hw_random/optee-rng.ko
++kernel/drivers/char/hw_random/arm_smccc_trng.ko
++kernel/drivers/char/hw_random/rockchip-rng.ko
++kernel/drivers/char/hw_random/rockchip-rng-bsp.ko
++kernel/drivers/char/tpm/tpm.ko
++kernel/drivers/char/tpm/tpm_i2c_infineon.ko
++kernel/drivers/iommu/arm/arm-smmu-v3/arm_smmu_v3.ko
++kernel/drivers/iommu/iova.ko
++kernel/drivers/gpu/drm/drm.ko
++kernel/drivers/gpu/drm/drm_panel_orientation_quirks.ko
++kernel/drivers/gpu/drm/drm_dma_helper.ko
++kernel/drivers/gpu/drm/drm_kms_helper.ko
++kernel/drivers/gpu/drm/drm_mipi_dsi.ko
++kernel/drivers/gpu/drm/display/drm_dp_aux_bus.ko
++kernel/drivers/gpu/drm/display/drm_display_helper.ko
++kernel/drivers/gpu/drm/rockchip/rockchipdrm.ko
++kernel/drivers/gpu/drm/panel/panel-simple.ko
++kernel/drivers/gpu/drm/bridge/display-connector.ko
++kernel/drivers/gpu/drm/bridge/sii902x.ko
++kernel/drivers/gpu/drm/bridge/analogix/analogix_dp.ko
++kernel/drivers/gpu/drm/bridge/synopsys/dw-hdmi.ko
++kernel/drivers/gpu/drm/bridge/synopsys/dw-hdmi-i2s-audio.ko
++kernel/drivers/gpu/drm/bridge/synopsys/dw-hdmi-cec.ko
++kernel/drivers/gpu/drm/bridge/synopsys/dw-mipi-dsi.ko
++kernel/drivers/connector/cn.ko
++kernel/drivers/base/firmware_loader/firmware_class.ko
++kernel/drivers/base/regmap/regmap-i2c.ko
++kernel/drivers/base/regmap/regmap-spi.ko
++kernel/drivers/base/regmap/regmap-mmio.ko
++kernel/drivers/base/regmap/regmap-i3c.ko
++kernel/drivers/block/brd.ko
++kernel/drivers/block/loop.ko
++kernel/drivers/block/zram/zram.ko
++kernel/drivers/misc/lkdtm/lkdtm.ko
++kernel/drivers/mfd/mfd-core.ko
++kernel/drivers/scsi/scsi_mod.ko
++kernel/drivers/scsi/scsi_common.ko
++kernel/drivers/scsi/scsi_transport_spi.ko
++kernel/drivers/scsi/sd_mod.ko
++kernel/drivers/scsi/sr_mod.ko
++kernel/drivers/nvme/host/nvme-core.ko
++kernel/drivers/nvme/host/nvme.ko
++kernel/drivers/ata/libata.ko
++kernel/drivers/ata/ahci.ko
++kernel/drivers/ata/libahci.ko
++kernel/drivers/ata/ahci_dwc.ko
++kernel/drivers/ata/libahci_platform.ko
++kernel/drivers/mtd/mtd.ko
++kernel/drivers/mtd/parsers/cmdlinepart.ko
++kernel/drivers/mtd/parsers/ofpart.ko
++kernel/drivers/mtd/mtd_blkdevs.ko
++kernel/drivers/mtd/mtdblock.ko
++kernel/drivers/mtd/chips/chipreg.ko
++kernel/drivers/mtd/nand/nandcore.ko
++kernel/drivers/mtd/nand/spi/spinand.ko
++kernel/drivers/mtd/spi-nor/spi-nor.ko
++kernel/drivers/mtd/ubi/ubi.ko
++kernel/drivers/spi/spidev.ko
++kernel/drivers/spi/spi-bitbang.ko
++kernel/drivers/spi/spi-rockchip.ko
++kernel/drivers/spi/spi-rockchip-sfc.ko
++kernel/drivers/net/mii.ko
++kernel/drivers/net/mdio.ko
++kernel/drivers/net/phy/mdio_devres.ko
++kernel/drivers/net/phy/phylink.ko
++kernel/drivers/net/phy/libphy.ko
++kernel/drivers/net/phy/fixed_phy.ko
++kernel/drivers/net/phy/motorcomm.ko
++kernel/drivers/net/phy/realtek.ko
++kernel/drivers/net/phy/rockchip.ko
++kernel/drivers/net/mdio/fwnode_mdio.ko
++kernel/drivers/net/mdio/of_mdio.ko
++kernel/drivers/net/pcs/pcs_xpcs.ko
++kernel/drivers/net/tun.ko
++kernel/drivers/net/veth.ko
++kernel/drivers/net/virtio_net.ko
++kernel/drivers/net/nlmon.ko
++kernel/drivers/net/can/dev/can-dev.ko
++kernel/drivers/net/ethernet/intel/libeth/libeth.ko
++kernel/drivers/net/ethernet/intel/libie/libie.ko
++kernel/drivers/net/ethernet/intel/e100.ko
++kernel/drivers/net/ethernet/intel/e1000/e1000.ko
++kernel/drivers/net/ethernet/intel/e1000e/e1000e.ko
++kernel/drivers/net/ethernet/intel/igb/igb.ko
++kernel/drivers/net/ethernet/intel/igc/igc.ko
++kernel/drivers/net/ethernet/intel/igbvf/igbvf.ko
++kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
++kernel/drivers/net/ethernet/intel/ixgbevf/ixgbevf.ko
++kernel/drivers/net/ethernet/intel/i40e/i40e.ko
++kernel/drivers/net/ethernet/intel/iavf/iavf.ko
++kernel/drivers/net/ethernet/intel/fm10k/fm10k.ko
++kernel/drivers/net/ethernet/intel/ice/ice.ko
++kernel/drivers/net/ethernet/jme.ko
++kernel/drivers/net/ethernet/realtek/8139cp.ko
++kernel/drivers/net/ethernet/realtek/8139too.ko
++kernel/drivers/net/ethernet/realtek/r8168_vendor/r8168.ko
++kernel/drivers/net/ethernet/realtek/r8169.ko
++kernel/drivers/net/ethernet/stmicro/stmmac/stmmac.ko
++kernel/drivers/net/ethernet/stmicro/stmmac/stmmac-platform.ko
++kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.ko
++kernel/drivers/net/usb/rtl8150.ko
++kernel/drivers/net/usb/r8152.ko
++kernel/drivers/net/net_failover.ko
++kernel/drivers/cdrom/cdrom.ko
++kernel/drivers/usb/common/usb-common.ko
++kernel/drivers/usb/core/usbcore.ko
++kernel/drivers/usb/dwc3/dwc3.ko
++kernel/drivers/usb/dwc3/dwc3-haps.ko
++kernel/drivers/usb/dwc3/dwc3-of-simple.ko
++kernel/drivers/usb/dwc2/dwc2.ko
++kernel/drivers/usb/mon/usbmon.ko
++kernel/drivers/usb/host/ehci-hcd.ko
++kernel/drivers/usb/host/ehci-pci.ko
++kernel/drivers/usb/host/ehci-platform.ko
++kernel/drivers/usb/host/ohci-hcd.ko
++kernel/drivers/usb/host/ohci-platform.ko
++kernel/drivers/usb/host/xhci-hcd.ko
++kernel/drivers/usb/host/xhci-pci.ko
++kernel/drivers/usb/host/xhci-plat-hcd.ko
++kernel/drivers/usb/class/cdc-acm.ko
++kernel/drivers/usb/storage/uas.ko
++kernel/drivers/usb/storage/usb-storage.ko
++kernel/drivers/usb/serial/usbserial.ko
++kernel/drivers/usb/serial/cp210x.ko
++kernel/drivers/usb/serial/ftdi_sio.ko
++kernel/drivers/usb/serial/keyspan.ko
++kernel/drivers/usb/serial/option.ko
++kernel/drivers/usb/serial/oti6858.ko
++kernel/drivers/usb/serial/pl2303.ko
++kernel/drivers/usb/serial/qcserial.ko
++kernel/drivers/usb/serial/sierra.ko
++kernel/drivers/usb/serial/usb_wwan.ko
++kernel/drivers/usb/misc/ezusb.ko
++kernel/drivers/usb/gadget/libcomposite.ko
++kernel/drivers/usb/gadget/udc/udc-core.ko
++kernel/drivers/usb/gadget/function/usb_f_acm.ko
++kernel/drivers/usb/gadget/function/u_serial.ko
++kernel/drivers/usb/gadget/function/usb_f_mass_storage.ko
++kernel/drivers/usb/gadget/function/usb_f_fs.ko
++kernel/drivers/usb/gadget/function/usb_f_uvc.ko
++kernel/drivers/usb/roles/roles.ko
++kernel/drivers/input/input-core.ko
++kernel/drivers/input/ff-memless.ko
++kernel/drivers/input/input-leds.ko
++kernel/drivers/input/evdev.ko
++kernel/drivers/input/keyboard/adc-keys.ko
++kernel/drivers/input/keyboard/gpio_keys.ko
++kernel/drivers/input/keyboard/gpio_keys_polled.ko
++kernel/drivers/input/mouse/cyapatp.ko
++kernel/drivers/input/mouse/elan_i2c.ko
++kernel/drivers/input/touchscreen/atmel_mxt_ts.ko
++kernel/drivers/input/touchscreen/elants_i2c.ko
++kernel/drivers/input/touchscreen/usbtouchscreen.ko
++kernel/drivers/input/misc/uinput.ko
++kernel/drivers/rtc/rtc-hym8563.ko
++kernel/drivers/i2c/i2c-core.ko
++kernel/drivers/i2c/i2c-dev.ko
++kernel/drivers/i2c/i2c-mux.ko
++kernel/drivers/i2c/algos/i2c-algo-bit.ko
++kernel/drivers/i2c/busses/i2c-rk3x.ko
++kernel/drivers/i3c/i3c.ko
++kernel/drivers/media/i2c/imx415.ko
++kernel/drivers/media/i2c/ov4689.ko
++kernel/drivers/media/i2c/ov5695.ko
++kernel/drivers/media/i2c/ov7251.ko
++kernel/drivers/media/mc/mc.ko
++kernel/drivers/media/v4l2-core/v4l2-async.ko
++kernel/drivers/media/v4l2-core/v4l2-cci.ko
++kernel/drivers/media/v4l2-core/v4l2-fwnode.ko
++kernel/drivers/media/v4l2-core/v4l2-mem2mem.ko
++kernel/drivers/media/v4l2-core/v4l2-dv-timings.ko
++kernel/drivers/media/v4l2-core/videodev.ko
++kernel/drivers/media/dvb-core/dvb-core.ko
++kernel/drivers/media/cec/core/cec.ko
++kernel/drivers/media/common/videobuf2/videobuf2-common.ko
++kernel/drivers/media/common/videobuf2/videobuf2-dma-sg.ko
++kernel/drivers/media/common/videobuf2/videobuf2-memops.ko
++kernel/drivers/media/common/videobuf2/videobuf2-v4l2.ko
++kernel/drivers/media/common/videobuf2/videobuf2-vmalloc.ko
++kernel/drivers/media/common/uvc.ko
++kernel/drivers/media/platform/rockchip/rga/rockchip-rga.ko
++kernel/drivers/media/usb/uvc/uvcvideo.ko
++kernel/drivers/pps/pps_core.ko
++kernel/drivers/ptp/ptp.ko
++kernel/drivers/ptp/ptp_kvm.ko
++kernel/drivers/power/reset/reboot-mode.ko
++kernel/drivers/power/reset/syscon-reboot-mode.ko
++kernel/drivers/power/supply/sbs-battery.ko
++kernel/drivers/power/supply/gpio-charger.ko
++kernel/drivers/power/supply/bq24735-charger.ko
++kernel/drivers/hwmon/hwmon.ko
++kernel/drivers/thermal/rockchip_thermal.ko
++kernel/drivers/watchdog/watchdog.ko
++kernel/drivers/watchdog/dw_wdt.ko
++kernel/drivers/bluetooth/hci_vhci.ko
++kernel/drivers/bluetooth/hci_uart.ko
++kernel/drivers/bluetooth/bfusb.ko
++kernel/drivers/bluetooth/btusb.ko
++kernel/drivers/bluetooth/btintel.ko
++kernel/drivers/bluetooth/btmrvl.ko
++kernel/drivers/bluetooth/btmrvl_sdio.ko
++kernel/drivers/bluetooth/btbcm.ko
++kernel/drivers/bluetooth/btrtl.ko
++kernel/drivers/edac/edac_core.ko
++kernel/drivers/cpufreq/cpufreq_performance.ko
++kernel/drivers/cpufreq/cpufreq_powersave.ko
++kernel/drivers/cpufreq/cpufreq_userspace.ko
++kernel/drivers/cpufreq/cpufreq_ondemand.ko
++kernel/drivers/cpufreq/cpufreq_conservative.ko
++kernel/drivers/cpufreq/cpufreq-dt.ko
++kernel/drivers/mmc/core/mmc_core.ko
++kernel/drivers/mmc/core/pwrseq_simple.ko
++kernel/drivers/mmc/core/pwrseq_emmc.ko
++kernel/drivers/mmc/core/mmc_block.ko
++kernel/drivers/mmc/core/mmc_test.ko
++kernel/drivers/mmc/host/sdhci.ko
++kernel/drivers/mmc/host/dw_mmc.ko
++kernel/drivers/mmc/host/dw_mmc-pltfm.ko
++kernel/drivers/mmc/host/dw_mmc-rockchip.ko
++kernel/drivers/mmc/host/sdhci-pltfm.ko
++kernel/drivers/mmc/host/sdhci-of-arasan.ko
++kernel/drivers/mmc/host/sdhci-of-dwcmshc.ko
++kernel/drivers/mmc/host/cqhci.ko
++kernel/drivers/ufs/core/ufshcd-core.ko
++kernel/drivers/ufs/host/ufshcd-pltfrm.ko
++kernel/drivers/ufs/host/ufs-rockchip.ko
++kernel/drivers/firmware/arm_scmi/transports/scmi_transport_smc.ko
++kernel/drivers/firmware/arm_scmi/transports/scmi_transport_mailbox.ko
++kernel/drivers/firmware/arm_scmi/transports/scmi_transport_optee.ko
++kernel/drivers/firmware/arm_scmi/scmi-core.ko
++kernel/drivers/firmware/arm_scmi/scmi-module.ko
++kernel/drivers/firmware/efi/efi-pstore.ko
++kernel/drivers/crypto/rockchip/rk_crypto.ko
++kernel/drivers/hid/hid.ko
++kernel/drivers/hid/uhid.ko
++kernel/drivers/hid/hid-generic.ko
++kernel/drivers/hid/hid-kensington.ko
++kernel/drivers/hid/hid-multitouch.ko
++kernel/drivers/hid/usbhid/usbhid.ko
++kernel/drivers/hid/i2c-hid/i2c-hid.ko
++kernel/drivers/hid/i2c-hid/i2c-hid-of.ko
++kernel/drivers/rpmsg/rpmsg_core.ko
++kernel/drivers/rpmsg/rpmsg_ns.ko
++kernel/drivers/rpmsg/virtio_rpmsg_bus.ko
++kernel/drivers/devfreq/governor_simpleondemand.ko
++kernel/drivers/devfreq/governor_performance.ko
++kernel/drivers/devfreq/governor_powersave.ko
++kernel/drivers/devfreq/governor_userspace.ko
++kernel/drivers/extcon/extcon-core.ko
++kernel/drivers/iio/industrialio.ko
++kernel/drivers/iio/adc/rockchip_saradc.ko
++kernel/drivers/iio/buffer/industrialio-triggered-buffer.ko
++kernel/drivers/iio/buffer/kfifo_buf.ko
++kernel/drivers/iio/imu/st_lsm6dsx/st_lsm6dsx.ko
++kernel/drivers/iio/imu/st_lsm6dsx/st_lsm6dsx_i2c.ko
++kernel/drivers/iio/imu/st_lsm6dsx/st_lsm6dsx_spi.ko
++kernel/drivers/iio/imu/st_lsm6dsx/st_lsm6dsx_i3c.ko
++kernel/drivers/iio/light/isl29018.ko
++kernel/drivers/iio/light/tsl2563.ko
++kernel/drivers/iio/light/tsl2583.ko
++kernel/drivers/iio/trigger/iio-trig-sysfs.ko
++kernel/drivers/nvmem/nvmem_rockchip_efuse.ko
++kernel/drivers/nvmem/nvmem-rockchip-otp.ko
++kernel/drivers/tee/tee.ko
++kernel/drivers/tee/optee/optee.ko
++kernel/sound/soundcore.ko
++kernel/sound/core/snd.ko
++kernel/sound/core/snd-hwdep.ko
++kernel/sound/core/snd-timer.ko
++kernel/sound/core/snd-hrtimer.ko
++kernel/sound/core/snd-pcm.ko
++kernel/sound/core/snd-seq-device.ko
++kernel/sound/core/snd-rawmidi.ko
++kernel/sound/core/seq/snd-seq.ko
++kernel/sound/core/seq/snd-seq-dummy.ko
++kernel/sound/core/seq/snd-seq-midi.ko
++kernel/sound/core/seq/snd-seq-midi-event.ko
++kernel/sound/usb/snd-usb-audio.ko
++kernel/sound/usb/snd-usbmidi-lib.ko
++kernel/sound/soc/snd-soc-core.ko
++kernel/sound/soc/codecs/snd-soc-es8311.ko
++kernel/sound/soc/codecs/snd-soc-es8316.ko
++kernel/sound/soc/codecs/snd-soc-es8323.ko
++kernel/sound/soc/codecs/snd-soc-es8326.ko
++kernel/sound/soc/codecs/snd-soc-hdmi-codec.ko
++kernel/sound/soc/codecs/snd-soc-rk3308.ko
++kernel/sound/soc/codecs/snd-soc-rk3328.ko
++kernel/sound/soc/codecs/snd-soc-rl6231.ko
++kernel/sound/soc/codecs/snd-soc-rt5616.ko
++kernel/sound/soc/codecs/snd-soc-rt5640.ko
++kernel/sound/soc/codecs/snd-soc-spdif-rx.ko
++kernel/sound/soc/codecs/snd-soc-spdif-tx.ko
++kernel/sound/soc/generic/snd-soc-simple-card-utils.ko
++kernel/sound/soc/generic/snd-soc-simple-card.ko
++kernel/net/core/selftests.ko
++kernel/net/core/failover.ko
++kernel/net/llc/llc.ko
++kernel/net/802/p8022.ko
++kernel/net/802/psnap.ko
++kernel/net/802/stp.ko
++kernel/net/netfilter/nfnetlink.ko
++kernel/net/netfilter/nfnetlink_acct.ko
++kernel/net/netfilter/nfnetlink_queue.ko
++kernel/net/netfilter/nfnetlink_log.ko
++kernel/net/netfilter/nfnetlink_osf.ko
++kernel/net/netfilter/nfnetlink_hook.ko
++kernel/net/netfilter/nf_conntrack.ko
++kernel/net/netfilter/nf_log_syslog.ko
++kernel/net/netfilter/nf_nat.ko
++kernel/net/netfilter/nf_synproxy_core.ko
++kernel/net/netfilter/nf_conncount.ko
++kernel/net/netfilter/nf_dup_netdev.ko
++kernel/net/netfilter/nf_tables.ko
++kernel/net/netfilter/nft_compat.ko
++kernel/net/netfilter/nft_connlimit.ko
++kernel/net/netfilter/nft_numgen.ko
++kernel/net/netfilter/nft_ct.ko
++kernel/net/netfilter/nft_limit.ko
++kernel/net/netfilter/nft_nat.ko
++kernel/net/netfilter/nft_queue.ko
++kernel/net/netfilter/nft_quota.ko
++kernel/net/netfilter/nft_reject.ko
++kernel/net/netfilter/nft_reject_inet.ko
++kernel/net/netfilter/nft_reject_netdev.ko
++kernel/net/netfilter/nft_tunnel.ko
++kernel/net/netfilter/nft_log.ko
++kernel/net/netfilter/nft_masq.ko
++kernel/net/netfilter/nft_redir.ko
++kernel/net/netfilter/nft_hash.ko
++kernel/net/netfilter/nft_fib.ko
++kernel/net/netfilter/nft_socket.ko
++kernel/net/netfilter/nft_osf.ko
++kernel/net/netfilter/nft_tproxy.ko
++kernel/net/netfilter/nft_xfrm.ko
++kernel/net/netfilter/nft_chain_nat.ko
++kernel/net/netfilter/nft_dup_netdev.ko
++kernel/net/netfilter/nft_fwd_netdev.ko
++kernel/net/netfilter/x_tables.ko
++kernel/net/netfilter/xt_tcpudp.ko
++kernel/net/netfilter/xt_mark.ko
++kernel/net/netfilter/xt_connmark.ko
++kernel/net/netfilter/xt_HMARK.ko
++kernel/net/netfilter/xt_LOG.ko
++kernel/net/netfilter/xt_NFLOG.ko
++kernel/net/netfilter/xt_NFQUEUE.ko
++kernel/net/netfilter/xt_RATEEST.ko
++kernel/net/netfilter/xt_TPROXY.ko
++kernel/net/netfilter/xt_TCPMSS.ko
++kernel/net/netfilter/xt_TCPOPTSTRIP.ko
++kernel/net/netfilter/xt_TEE.ko
++kernel/net/netfilter/xt_IDLETIMER.ko
++kernel/net/netfilter/xt_addrtype.ko
++kernel/net/netfilter/xt_bpf.ko
++kernel/net/netfilter/xt_cluster.ko
++kernel/net/netfilter/xt_comment.ko
++kernel/net/netfilter/xt_connbytes.ko
++kernel/net/netfilter/xt_connlabel.ko
++kernel/net/netfilter/xt_connlimit.ko
++kernel/net/netfilter/xt_conntrack.ko
++kernel/net/netfilter/xt_cpu.ko
++kernel/net/netfilter/xt_dccp.ko
++kernel/net/netfilter/xt_devgroup.ko
++kernel/net/netfilter/xt_dscp.ko
++kernel/net/netfilter/xt_ecn.ko
++kernel/net/netfilter/xt_esp.ko
++kernel/net/netfilter/xt_hashlimit.ko
++kernel/net/netfilter/xt_helper.ko
++kernel/net/netfilter/xt_hl.ko
++kernel/net/netfilter/xt_ipcomp.ko
++kernel/net/netfilter/xt_iprange.ko
++kernel/net/netfilter/xt_ipvs.ko
++kernel/net/netfilter/xt_l2tp.ko
++kernel/net/netfilter/xt_length.ko
++kernel/net/netfilter/xt_limit.ko
++kernel/net/netfilter/xt_mac.ko
++kernel/net/netfilter/xt_multiport.ko
++kernel/net/netfilter/xt_nfacct.ko
++kernel/net/netfilter/xt_osf.ko
++kernel/net/netfilter/xt_owner.ko
++kernel/net/netfilter/xt_cgroup.ko
++kernel/net/netfilter/xt_pkttype.ko
++kernel/net/netfilter/xt_policy.ko
++kernel/net/netfilter/xt_quota.ko
++kernel/net/netfilter/xt_rateest.ko
++kernel/net/netfilter/xt_realm.ko
++kernel/net/netfilter/xt_recent.ko
++kernel/net/netfilter/xt_sctp.ko
++kernel/net/netfilter/xt_socket.ko
++kernel/net/netfilter/xt_state.ko
++kernel/net/netfilter/xt_statistic.ko
++kernel/net/netfilter/xt_string.ko
++kernel/net/netfilter/xt_tcpmss.ko
++kernel/net/netfilter/xt_time.ko
++kernel/net/netfilter/xt_u32.ko
++kernel/net/netfilter/ipset/ip_set.ko
++kernel/net/netfilter/ipvs/ip_vs.ko
++kernel/net/ipv4/netfilter/nf_defrag_ipv4.ko
++kernel/net/ipv4/netfilter/nf_socket_ipv4.ko
++kernel/net/ipv4/netfilter/nf_tproxy_ipv4.ko
++kernel/net/ipv4/netfilter/nf_reject_ipv4.ko
++kernel/net/ipv4/netfilter/nft_reject_ipv4.ko
++kernel/net/ipv4/netfilter/nft_fib_ipv4.ko
++kernel/net/ipv4/netfilter/nft_dup_ipv4.ko
++kernel/net/ipv4/netfilter/ipt_ah.ko
++kernel/net/ipv4/netfilter/ipt_rpfilter.ko
++kernel/net/ipv4/netfilter/ipt_ECN.ko
++kernel/net/ipv4/netfilter/ipt_REJECT.ko
++kernel/net/ipv4/netfilter/ipt_SYNPROXY.ko
++kernel/net/ipv4/netfilter/arpt_mangle.ko
++kernel/net/ipv4/netfilter/nf_dup_ipv4.ko
++kernel/net/ipv4/tcp_cubic.ko
++kernel/net/xfrm/xfrm_algo.ko
++kernel/net/xfrm/xfrm_user.ko
++kernel/net/ipv6/ipv6.ko
++kernel/net/ipv6/netfilter/nf_defrag_ipv6.ko
++kernel/net/ipv6/netfilter/nf_socket_ipv6.ko
++kernel/net/ipv6/netfilter/nf_tproxy_ipv6.ko
++kernel/net/ipv6/netfilter/nf_reject_ipv6.ko
++kernel/net/ipv6/netfilter/nft_reject_ipv6.ko
++kernel/net/packet/af_packet.ko
++kernel/net/key/af_key.ko
++kernel/net/bridge/bridge.ko
++kernel/net/bridge/br_netfilter.ko
++kernel/net/bridge/netfilter/nf_conntrack_bridge.ko
++kernel/net/can/can.ko
++kernel/net/can/can-raw.ko
++kernel/net/can/can-bcm.ko
++kernel/net/can/can-gw.ko
++kernel/net/bluetooth/bluetooth.ko
++kernel/net/bluetooth/rfcomm/rfcomm.ko
++kernel/net/bluetooth/hidp/hidp.ko
++kernel/net/sunrpc/sunrpc.ko
++kernel/net/sunrpc/auth_gss/auth_rpcgss.ko
++kernel/net/sunrpc/auth_gss/rpcsec_gss_krb5.ko
++kernel/net/rfkill/rfkill.ko
++kernel/net/dns_resolver/dns_resolver.ko
++kernel/net/openvswitch/openvswitch.ko
++kernel/net/vmw_vsock/vsock.ko
++kernel/net/vmw_vsock/vsock_diag.ko
++kernel/net/vmw_vsock/vmw_vsock_virtio_transport_common.ko
++kernel/net/vmw_vsock/vsock_loopback.ko
++kernel/net/mpls/mpls_gso.ko
++kernel/net/nsh/nsh.ko
++kernel/virt/lib/irqbypass.ko
+diff --git a/kos/lib/modules/6.12.77-kdev/modules.builtin.modinfo b/kos/lib/modules/6.12.77-kdev/modules.builtin.modinfo
+new file mode 100644
+index 0000000000000000000000000000000000000000..23194eb978abe0f91703f7225200896d0425a407
+GIT binary patch
+literal 176011
+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
+BU6}v?
+
+literal 0
+HcmV?d00001
+
+diff --git a/kos/lib/modules/6.12.77-kdev/modules.dep b/kos/lib/modules/6.12.77-kdev/modules.dep
+new file mode 100644
+index 000000000..bf94d9fe2
+--- /dev/null
++++ b/kos/lib/modules/6.12.77-kdev/modules.dep
+@@ -0,0 +1,154 @@
++kernel/drivers/media/tuners/e4000.ko:
++kernel/drivers/media/tuners/fc0011.ko:
++kernel/drivers/media/tuners/fc0012.ko:
++kernel/drivers/media/tuners/fc0013.ko:
++kernel/drivers/media/tuners/fc2580.ko:
++kernel/drivers/media/tuners/it913x.ko:
++kernel/drivers/media/tuners/m88rs6000t.ko:
++kernel/drivers/media/tuners/max2165.ko:
++kernel/drivers/media/tuners/mc44s803.ko:
++kernel/drivers/media/tuners/msi001.ko:
++kernel/drivers/media/tuners/mt2060.ko:
++kernel/drivers/media/tuners/mt2063.ko:
++kernel/drivers/media/tuners/mt20xx.ko:
++kernel/drivers/media/tuners/mt2131.ko:
++kernel/drivers/media/tuners/mt2266.ko:
++kernel/drivers/media/tuners/mxl301rf.ko:
++kernel/drivers/media/tuners/mxl5005s.ko:
++kernel/drivers/media/tuners/mxl5007t.ko:
++kernel/drivers/media/tuners/qm1d1b0004.ko:
++kernel/drivers/media/tuners/qm1d1c0042.ko:
++kernel/drivers/media/tuners/qt1010.ko:
++kernel/drivers/media/tuners/r820t.ko:
++kernel/drivers/media/tuners/si2157.ko:
++kernel/drivers/media/tuners/tuner-simple.ko: kernel/drivers/media/tuners/tuner-types.ko
++kernel/drivers/media/tuners/tuner-types.ko:
++kernel/drivers/media/tuners/tda18212.ko:
++kernel/drivers/media/tuners/tda18218.ko:
++kernel/drivers/media/tuners/tda18250.ko:
++kernel/drivers/media/tuners/tda18271.ko:
++kernel/drivers/media/tuners/tda827x.ko:
++kernel/drivers/media/tuners/tda8290.ko:
++kernel/drivers/media/tuners/tda9887.ko:
++kernel/drivers/media/tuners/tea5761.ko:
++kernel/drivers/media/tuners/tea5767.ko:
++kernel/drivers/media/tuners/tua9001.ko:
++kernel/drivers/media/tuners/xc2028.ko:
++kernel/drivers/media/tuners/xc4000.ko:
++kernel/drivers/media/tuners/xc5000.ko:
++kernel/drivers/media/dvb-frontends/a8293.ko:
++kernel/drivers/media/dvb-frontends/af9013.ko:
++kernel/drivers/media/dvb-frontends/af9033.ko:
++kernel/drivers/media/dvb-frontends/ascot2e.ko:
++kernel/drivers/media/dvb-frontends/atbm8830.ko:
++kernel/drivers/media/dvb-frontends/au8522_common.ko:
++kernel/drivers/media/dvb-frontends/au8522_dig.ko: kernel/drivers/media/dvb-frontends/au8522_common.ko
++kernel/drivers/media/dvb-frontends/au8522_decoder.ko: kernel/drivers/media/dvb-frontends/au8522_common.ko
++kernel/drivers/media/dvb-frontends/bcm3510.ko:
++kernel/drivers/media/dvb-frontends/cx22700.ko:
++kernel/drivers/media/dvb-frontends/cx22702.ko:
++kernel/drivers/media/dvb-frontends/cx24110.ko:
++kernel/drivers/media/dvb-frontends/cx24116.ko:
++kernel/drivers/media/dvb-frontends/cx24117.ko:
++kernel/drivers/media/dvb-frontends/cx24120.ko:
++kernel/drivers/media/dvb-frontends/cx24123.ko:
++kernel/drivers/media/dvb-frontends/cxd2099.ko:
++kernel/drivers/media/dvb-frontends/cxd2820r.ko:
++kernel/drivers/media/dvb-frontends/cxd2841er.ko:
++kernel/drivers/media/dvb-frontends/cxd2880/cxd2880.ko:
++kernel/drivers/media/dvb-frontends/dib3000mb.ko:
++kernel/drivers/media/dvb-frontends/dib3000mc.ko: kernel/drivers/media/dvb-frontends/dibx000_common.ko
++kernel/drivers/media/dvb-frontends/dibx000_common.ko:
++kernel/drivers/media/dvb-frontends/dib7000m.ko: kernel/drivers/media/dvb-frontends/dibx000_common.ko
++kernel/drivers/media/dvb-frontends/dib7000p.ko: kernel/drivers/media/dvb-frontends/dibx000_common.ko
++kernel/drivers/media/dvb-frontends/dib8000.ko: kernel/drivers/media/dvb-frontends/dibx000_common.ko
++kernel/drivers/media/dvb-frontends/dib9000.ko: kernel/drivers/media/dvb-frontends/dibx000_common.ko
++kernel/drivers/media/dvb-frontends/drx39xyj/drx39xyj.ko:
++kernel/drivers/media/dvb-frontends/drxd.ko:
++kernel/drivers/media/dvb-frontends/drxk.ko:
++kernel/drivers/media/dvb-frontends/ds3000.ko:
++kernel/drivers/media/dvb-frontends/ec100.ko:
++kernel/drivers/media/dvb-frontends/helene.ko:
++kernel/drivers/media/dvb-frontends/horus3a.ko:
++kernel/drivers/media/dvb-frontends/isl6405.ko:
++kernel/drivers/media/dvb-frontends/isl6421.ko:
++kernel/drivers/media/dvb-frontends/isl6423.ko:
++kernel/drivers/media/dvb-frontends/ix2505v.ko:
++kernel/drivers/media/dvb-frontends/l64781.ko:
++kernel/drivers/media/dvb-frontends/lg2160.ko:
++kernel/drivers/media/dvb-frontends/lgdt3305.ko:
++kernel/drivers/media/dvb-frontends/lgdt3306a.ko:
++kernel/drivers/media/dvb-frontends/lgdt330x.ko:
++kernel/drivers/media/dvb-frontends/lgs8gl5.ko:
++kernel/drivers/media/dvb-frontends/lgs8gxx.ko:
++kernel/drivers/media/dvb-frontends/lnbh25.ko:
++kernel/drivers/media/dvb-frontends/lnbh29.ko:
++kernel/drivers/media/dvb-frontends/lnbp21.ko:
++kernel/drivers/media/dvb-frontends/lnbp22.ko:
++kernel/drivers/media/dvb-frontends/m88ds3103.ko:
++kernel/drivers/media/dvb-frontends/m88rs2000.ko:
++kernel/drivers/media/dvb-frontends/mb86a16.ko:
++kernel/drivers/media/dvb-frontends/mb86a20s.ko:
++kernel/drivers/media/dvb-frontends/mn88443x.ko:
++kernel/drivers/media/dvb-frontends/mn88472.ko:
++kernel/drivers/media/dvb-frontends/mn88473.ko:
++kernel/drivers/media/dvb-frontends/mt312.ko:
++kernel/drivers/media/dvb-frontends/mt352.ko:
++kernel/drivers/media/dvb-frontends/mxl5xx.ko:
++kernel/drivers/media/dvb-frontends/mxl692.ko:
++kernel/drivers/media/dvb-frontends/nxt200x.ko:
++kernel/drivers/media/dvb-frontends/nxt6000.ko:
++kernel/drivers/media/dvb-frontends/or51132.ko:
++kernel/drivers/media/dvb-frontends/or51211.ko:
++kernel/drivers/media/dvb-frontends/dvb-pll.ko:
++kernel/drivers/media/dvb-frontends/rtl2830.ko:
++kernel/drivers/media/dvb-frontends/rtl2832.ko:
++kernel/drivers/media/dvb-frontends/rtl2832_sdr.ko:
++kernel/drivers/media/dvb-frontends/s5h1409.ko:
++kernel/drivers/media/dvb-frontends/s5h1411.ko:
++kernel/drivers/media/dvb-frontends/s5h1420.ko:
++kernel/drivers/media/dvb-frontends/s5h1432.ko:
++kernel/drivers/media/dvb-frontends/s921.ko:
++kernel/drivers/media/dvb-frontends/si2165.ko:
++kernel/drivers/media/dvb-frontends/si2168.ko:
++kernel/drivers/media/dvb-frontends/si21xx.ko:
++kernel/drivers/media/dvb-frontends/sp2.ko:
++kernel/drivers/media/dvb-frontends/sp887x.ko:
++kernel/drivers/media/dvb-frontends/stb0899.ko:
++kernel/drivers/media/dvb-frontends/stb6000.ko:
++kernel/drivers/media/dvb-frontends/stb6100.ko:
++kernel/drivers/media/dvb-frontends/stv0288.ko:
++kernel/drivers/media/dvb-frontends/stv0297.ko:
++kernel/drivers/media/dvb-frontends/stv0299.ko:
++kernel/drivers/media/dvb-frontends/stv0367.ko:
++kernel/drivers/media/dvb-frontends/stv0900.ko:
++kernel/drivers/media/dvb-frontends/stv090x.ko:
++kernel/drivers/media/dvb-frontends/stv0910.ko:
++kernel/drivers/media/dvb-frontends/stv6110.ko:
++kernel/drivers/media/dvb-frontends/stv6110x.ko:
++kernel/drivers/media/dvb-frontends/stv6111.ko:
++kernel/drivers/media/dvb-frontends/tc90522.ko:
++kernel/drivers/media/dvb-frontends/tda10021.ko:
++kernel/drivers/media/dvb-frontends/tda10023.ko:
++kernel/drivers/media/dvb-frontends/tda10048.ko:
++kernel/drivers/media/dvb-frontends/tda1004x.ko:
++kernel/drivers/media/dvb-frontends/tda10071.ko:
++kernel/drivers/media/dvb-frontends/tda10086.ko:
++kernel/drivers/media/dvb-frontends/tda18271c2dd.ko:
++kernel/drivers/media/dvb-frontends/tda665x.ko:
++kernel/drivers/media/dvb-frontends/tda8083.ko:
++kernel/drivers/media/dvb-frontends/tda8261.ko:
++kernel/drivers/media/dvb-frontends/tda826x.ko:
++kernel/drivers/media/dvb-frontends/ts2020.ko:
++kernel/drivers/media/dvb-frontends/tua6100.ko:
++kernel/drivers/media/dvb-frontends/cx24113.ko:
++kernel/drivers/media/dvb-frontends/dib0070.ko:
++kernel/drivers/media/dvb-frontends/dib0090.ko:
++kernel/drivers/media/dvb-frontends/itd1000.ko:
++kernel/drivers/media/dvb-frontends/ves1820.ko:
++kernel/drivers/media/dvb-frontends/ves1x93.ko:
++kernel/drivers/media/dvb-frontends/zd1301_demod.ko:
++kernel/drivers/media/dvb-frontends/zl10036.ko:
++kernel/drivers/media/dvb-frontends/zl10039.ko:
++kernel/drivers/media/dvb-frontends/zl10353.ko:
++kernel/drivers/media/spi/cxd2880-spi.ko:
+diff --git a/kos/lib/modules/6.12.77-kdev/modules.devname b/kos/lib/modules/6.12.77-kdev/modules.devname
+new file mode 100644
+index 000000000..e69de29bb
+diff --git a/kos/lib/modules/6.12.77-kdev/modules.softdep b/kos/lib/modules/6.12.77-kdev/modules.softdep
+new file mode 100644
+index 000000000..5554ccca7
+--- /dev/null
++++ b/kos/lib/modules/6.12.77-kdev/modules.softdep
+@@ -0,0 +1 @@
++# Soft dependencies extracted from modules themselves.
+diff --git a/kos/lib/modules/6.12.77-kdev/modules.symbols b/kos/lib/modules/6.12.77-kdev/modules.symbols
+new file mode 100644
+index 000000000..bf21c5858
+--- /dev/null
++++ b/kos/lib/modules/6.12.77-kdev/modules.symbols
+@@ -0,0 +1,192 @@
++# Aliases for symbols, used by symbol_request().
++alias symbol:mb86a20s_attach mb86a20s
++alias symbol:zd1301_demod_get_i2c_adapter zd1301_demod
++alias symbol:dib0090_set_dc_servo dib0090
++alias symbol:s5h1409_attach s5h1409
++alias symbol:stv6110_attach stv6110
++alias symbol:ec100_attach ec100
++alias symbol:stv0297_attach stv0297
++alias symbol:or51211_attach or51211
++alias symbol:dib0090_update_rframp_7090 dib0090
++alias symbol:isl6421_attach isl6421
++alias symbol:dib7000p_attach dib7000p
++alias symbol:tda9887_attach tda9887
++alias symbol:tda665x_attach tda665x
++alias symbol:max2165_attach max2165
++alias symbol:cxd2880_attach cxd2880
++alias symbol:cx24113_attach cx24113
++alias symbol:lg2160_attach lg2160
++alias symbol:drxk_attach drxk
++alias symbol:dib7000m_pid_filter dib7000m
++alias symbol:au8522_writereg au8522_common
++alias symbol:tda10045_attach tda1004x
++alias symbol:or51132_attach or51132
++alias symbol:r820t_attach r820t
++alias symbol:dib0070_wbd_offset dib0070
++alias symbol:dib7000m_attach dib7000m
++alias symbol:dib0090_set_vga dib0090
++alias symbol:dib3000mc_get_tuner_i2c_master dib3000mc
++alias symbol:lgs8gxx_attach lgs8gxx
++alias symbol:s5h1411_attach s5h1411
++alias symbol:isl6423_attach isl6423
++alias symbol:au8522_init au8522_common
++alias symbol:stv0288_attach stv0288
++alias symbol:dib8000_attach dib8000
++alias symbol:dib3000mc_i2c_enumeration dib3000mc
++alias symbol:tda827x_attach tda827x
++alias symbol:au8522_get_state au8522_common
++alias symbol:ts2020_attach ts2020
++alias symbol:cxd2820r_attach cxd2820r
++alias symbol:dib0090_dcc_freq dib0090
++alias symbol:lgdt330x_attach lgdt330x
++alias symbol:lgdt3306a_attach lgdt3306a
++alias symbol:mt2266_attach mt2266
++alias symbol:dibx000_init_i2c_master dibx000_common
++alias symbol:stv0910_attach stv0910
++alias symbol:dib7000m_pid_filter_ctrl dib7000m
++alias symbol:tea5761_autodetection tea5761
++alias symbol:helene_attach helene
++alias symbol:dib3000mb_attach dib3000mb
++alias symbol:lgs8gl5_attach lgs8gl5
++alias symbol:dib0090_get_wbd_target dib0090
++alias symbol:stb0899_attach stb0899
++alias symbol:s5h1432_attach s5h1432
++alias symbol:xc5000_attach xc5000
++alias symbol:dib9000_set_i2c_adapter dib9000
++alias symbol:dibx000_reset_i2c_master dibx000_common
++alias symbol:dib0090_set_switch dib0090
++alias symbol:cx22700_attach cx22700
++alias symbol:dib3000mc_pid_control dib3000mc
++alias symbol:stv0900_attach stv0900
++alias symbol:sp887x_attach sp887x
++alias symbol:dibx000_exit_i2c_master dibx000_common
++alias symbol:dib9000_i2c_enumeration dib9000
++alias symbol:stb6100_attach stb6100
++alias symbol:dibx000_get_i2c_adapter dibx000_common
++alias symbol:cx24117_attach cx24117
++alias symbol:zl10036_attach zl10036
++alias symbol:fc0013_rc_cal_add fc0013
++alias symbol:atbm8830_attach atbm8830
++alias symbol:mxl5007t_attach mxl5007t
++alias symbol:mt2131_attach mt2131
++alias symbol:fc0012_attach fc0012
++alias symbol:mt352_attach mt352
++alias symbol:dib0070_set_rf_output dib0070
++alias symbol:dib0090_get_wbd_offset dib0090
++alias symbol:m88ds3103_attach m88ds3103
++alias symbol:cx24123_attach cx24123
++alias symbol:tda10023_attach tda10023
++alias symbol:m88ds3103_get_agc_pwm m88ds3103
++alias symbol:dib0070_ctrl_agc_filter dib0070
++alias symbol:dib9000_fw_pid_filter dib9000
++alias symbol:drxd_attach drxd
++alias symbol:cxd2841er_attach_s cxd2841er
++alias symbol:mxl5xx_attach mxl5xx
++alias symbol:cx24116_attach cx24116
++alias symbol:ascot2e_attach ascot2e
++alias symbol:au8522_led_ctrl au8522_common
++alias symbol:au8522_i2c_gate_ctrl au8522_common
++alias symbol:au8522_release_state au8522_common
++alias symbol:dib0090_fw_register dib0090
++alias symbol:dib0090_gain_control dib0090
++alias symbol:helene_attach_s helene
++alias symbol:dib3000mc_attach dib3000mc
++alias symbol:zl10353_attach zl10353
++alias symbol:stv6110x_attach stv6110x
++alias symbol:fc0013_attach fc0013
++alias symbol:tea5761_attach tea5761
++alias symbol:xc2028_attach xc2028
++alias symbol:mc44s803_attach mc44s803
++alias symbol:s921_attach s921
++alias symbol:stb6000_attach stb6000
++alias symbol:au8522_attach au8522_dig
++alias symbol:dib9000_fw_pid_filter_ctrl dib9000
++alias symbol:dib0090_get_tune_state dib0090
++alias symbol:tda18218_attach tda18218
++alias symbol:mt2060_attach mt2060
++alias symbol:cxd2841er_attach_t_c cxd2841er
++alias symbol:s5h1420_attach s5h1420
++alias symbol:tda8083_attach tda8083
++alias symbol:mt312_attach mt312
++alias symbol:au8522_sleep au8522_common
++alias symbol:tda826x_attach tda826x
++alias symbol:mb86a16_attach mb86a16
++alias symbol:tuner_count tuner_types
++alias symbol:bcm3510_attach bcm3510
++alias symbol:dib0090_update_tuning_table_7090 dib0090
++alias symbol:dib0090_set_tune_state dib0090
++alias symbol:stv0299_attach stv0299
++alias symbol:fc0011_attach fc0011
++alias symbol:ves1x93_attach ves1x93
++alias symbol:drx39xxj_attach drx39xyj
++alias symbol:tda10046_attach tda1004x
++alias symbol:si21xx_attach si21xx
++alias symbol:ds3000_attach ds3000
++alias symbol:nxt200x_attach nxt200x
++alias symbol:cx24110_attach cx24110
++alias symbol:tea5767_attach tea5767
++alias symbol:itd1000_attach itd1000
++alias symbol:lnbp22_attach lnbp22
++alias symbol:fc0013_rc_cal_reset fc0013
++alias symbol:dib9000_firmware_post_pll_init dib9000
++alias symbol:stv0367ddb_attach stv0367
++alias symbol:lnbh25_attach lnbh25
++alias symbol:cx24113_agc_callback cx24113
++alias symbol:dib9000_get_slave_frontend dib9000
++alias symbol:cx22702_attach cx22702
++alias symbol:stv0367ter_attach stv0367
++alias symbol:cx24120_attach cx24120
++alias symbol:xc4000_attach xc4000
++alias symbol:tea5767_autodetection tea5767
++alias symbol:tda18271c2dd_attach tda18271c2dd
++alias symbol:mxl5005s_attach mxl5005s
++alias symbol:lnbp21_attach lnbp21
++alias symbol:dib9000_get_component_bus_interface dib9000
++alias symbol:tda829x_attach tda8290
++alias symbol:zd1301_demod_get_dvb_frontend zd1301_demod
++alias symbol:tda10048_attach tda10048
++alias symbol:au8522_readreg au8522_common
++alias symbol:ves1820_attach ves1820
++alias symbol:stv0367cab_attach stv0367
++alias symbol:dib0090_get_current_gain dib0090
++alias symbol:ix2505v_attach ix2505v
++alias symbol:m88rs2000_attach m88rs2000
++alias symbol:nxt6000_attach nxt6000
++alias symbol:dib7000m_get_i2c_master dib7000m
++alias symbol:dib9000_fw_set_component_bus_speed dib9000
++alias symbol:microtune_attach mt20xx
++alias symbol:tda18271_attach tda18271
++alias symbol:dibx000_i2c_set_speed dibx000_common
++alias symbol:tda10021_attach tda10021
++alias symbol:mt2063_attach mt2063
++alias symbol:lnbh24_attach lnbp21
++alias symbol:dib0090_pwm_gain_reset dib0090
++alias symbol:isl6405_attach isl6405
++alias symbol:dib3000mc_set_config dib3000mc
++alias symbol:zl10039_attach zl10039
++alias symbol:dib9000_attach dib9000
++alias symbol:horus3a_attach horus3a
++alias symbol:tuners tuner_types
++alias symbol:dib9000_get_i2c_master dib9000
++alias symbol:simple_tuner_attach tuner_simple
++alias symbol:lnbh29_attach lnbh29
++alias symbol:dvb_pll_attach dvb_pll
++alias symbol:stv6111_attach stv6111
++alias symbol:dib0090_register dib0090
++alias symbol:l64781_attach l64781
++alias symbol:tda8261_attach tda8261
++alias symbol:dib0070_get_rf_output dib0070
++alias symbol:lgdt3305_attach lgdt3305
++alias symbol:tda10086_attach tda10086
++alias symbol:stv090x_attach stv090x
++alias symbol:qt1010_attach qt1010
++alias symbol:cx24123_get_tuner_i2c_adapter cx24123
++alias symbol:s5h1420_get_tuner_i2c_adapter s5h1420
++alias symbol:au8522_analog_i2c_gate_ctrl au8522_common
++alias symbol:dib9000_set_gpio dib9000
++alias symbol:dib3000mc_pid_parse dib3000mc
++alias symbol:dib0070_attach dib0070
++alias symbol:tda829x_probe tda8290
++alias symbol:dib9000_set_slave_frontend dib9000
++alias symbol:tua6100_attach tua6100
++alias symbol:dib9000_get_tuner_interface dib9000
+-- 
+2.34.1
+
