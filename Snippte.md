@@ -143,7 +143,14 @@ qemu-system-aarch64 \
 
 
 
+## 测试pcie模块
 
+```shell
+
+scp -r 192.168.66.188:/rockchip/kernel/rockchip-linux_kernel.git/drivers/pci/controller/dwc/pcie-dw-rockchip.ko /root
+
+
+```
 
 
 
