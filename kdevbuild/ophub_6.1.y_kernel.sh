@@ -99,6 +99,9 @@ make ARCH=arm64 \
   LOCALVERSION=-kdev \
   olddefconfig
 
+# show config
+cat .config
+
 # check kver
 KVER=$(make LOCALVERSION=-kdev kernelrelease)
 KVER="${KVER/kdev*/kdev}"
@@ -144,9 +147,9 @@ md5sum arch/arm64/boot/Image
 cp -a arch/arm64/boot/Image ${WORKDIR}/release/
 
 # release dtb
-ls -alh ./arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dtb
-md5sum ./arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dtb
-cp -a ./arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dtb ${WORKDIR}/release/
+ls -alh ./arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb
+md5sum ./arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb
+cp -a ./arch/arm64/boot/dts/rockchip/rk3588-owl-ai-box-plus-v10.dtb ${WORKDIR}/release/
 
 # release config
 cp .config ${WORKDIR}/release/config-6.1.y-kdev
